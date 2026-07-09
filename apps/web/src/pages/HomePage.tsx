@@ -127,32 +127,32 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary/95 to-blue-900 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 text-foreground">
         {/* Subtle dot grid */}
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+        <div className="absolute inset-0 opacity-[0.05]"
+          style={{ backgroundImage: "radial-gradient(circle, #1d4ed8 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-0 md:pt-28">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center pb-16 md:pb-24">
 
             {/* Left column */}
             <div>
-              <div className="inline-flex items-center gap-2.5 bg-white/15 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium text-white mb-8 border border-white/25 shadow-lg">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" style={{ boxShadow: "0 0 6px #34d399" }} />
+              <div className="inline-flex items-center gap-2.5 bg-white rounded-full px-4 py-2 text-sm font-medium text-slate-700 mb-8 border border-slate-200 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" style={{ boxShadow: "0 0 6px #34d399" }} />
                 Platforma #1 pentru servicii locale în România
               </div>
 
-              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 leading-[1.08]">
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 leading-[1.08] text-slate-900">
                 Găsește servicii<br />
-                <span className="text-blue-300">locale acum</span>
+                <span className="text-primary">locale acum</span>
               </h1>
 
-              <p className="text-lg text-white/80 mb-10 max-w-md leading-relaxed">
+              <p className="text-lg text-slate-600 mb-10 max-w-md leading-relaxed">
                 Mâncare gătită acasă, frizeri, meșteri, transport —<br className="hidden sm:block" /> totul local, totul verificat.
               </p>
 
               {/* White search card */}
-              <div className="bg-white rounded-2xl p-1.5 flex flex-col sm:flex-row gap-1 shadow-[0_8px_40px_rgba(59,130,246,0.35)]">
+              <div className="bg-white rounded-2xl p-1.5 flex flex-col sm:flex-row gap-1 border border-slate-200 shadow-[0_8px_40px_rgba(59,130,246,0.15)]">
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
@@ -184,7 +184,7 @@ export default function HomePage() {
                   <button
                     key={tag}
                     onClick={() => setSearch(tag)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-colors"
+                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary transition-colors"
                   >
                     {tag}
                   </button>
@@ -195,122 +195,122 @@ export default function HomePage() {
             {/* Right column — decorative service cards (desktop only) */}
             <div className="hidden lg:block relative h-[400px]">
               {/* Card 1 */}
-              <div className="absolute top-6 left-10 w-56 rounded-2xl p-4"
-                style={{ transform: "rotate(-3deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
+              <div className="absolute top-6 left-10 w-56 rounded-2xl p-4 bg-white"
+                style={{ transform: "rotate(-3deg)", border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 20px 50px rgba(30,64,175,0.15)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/30 flex items-center justify-center text-orange-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-500 shrink-0">
                     <Utensils className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">Mâncare acasă</div>
-                    <div className="text-xs text-blue-200/70">Andreea C. · București</div>
+                    <div className="text-sm font-semibold text-slate-900 truncate">Mâncare acasă</div>
+                    <div className="text-xs text-slate-500">Andreea C. · București</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <span className="text-xs text-blue-200/70 ml-1">5.0</span>
+                    <span className="text-xs text-slate-500 ml-1">5.0</span>
                   </div>
-                  <span className="text-xs font-bold text-emerald-400">50 RON</span>
+                  <span className="text-xs font-bold text-emerald-600">50 RON</span>
                 </div>
               </div>
 
               {/* Card 2 */}
-              <div className="absolute top-2 right-6 w-52 rounded-2xl p-4"
-                style={{ transform: "rotate(2.5deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
+              <div className="absolute top-2 right-6 w-52 rounded-2xl p-4 bg-white"
+                style={{ transform: "rotate(2.5deg)", border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 20px 50px rgba(30,64,175,0.15)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-500 shrink-0">
                     <Scissors className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">Frizerie Pro</div>
-                    <div className="text-xs text-blue-200/70">Salon Elite · Cluj</div>
+                    <div className="text-sm font-semibold text-slate-900 truncate">Frizerie Pro</div>
+                    <div className="text-xs text-slate-500">Salon Elite · Cluj</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <Star className="h-3 w-3 text-white/30" />
-                    <span className="text-xs text-blue-200/70 ml-1">4.8</span>
+                    <Star className="h-3 w-3 text-slate-200" />
+                    <span className="text-xs text-slate-500 ml-1">4.8</span>
                   </div>
-                  <span className="text-xs font-bold text-emerald-400">35 RON</span>
+                  <span className="text-xs font-bold text-emerald-600">35 RON</span>
                 </div>
               </div>
 
               {/* Card 3 */}
-              <div className="absolute bottom-16 left-4 w-52 rounded-2xl p-4"
-                style={{ transform: "rotate(1.5deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
+              <div className="absolute bottom-16 left-4 w-52 rounded-2xl p-4 bg-white"
+                style={{ transform: "rotate(1.5deg)", border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 20px 50px rgba(30,64,175,0.15)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-500/30 flex items-center justify-center text-sky-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-500 shrink-0">
                     <Wrench className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">Reparații rapide</div>
-                    <div className="text-xs text-blue-200/70">Mihai R. · Timișoara</div>
+                    <div className="text-sm font-semibold text-slate-900 truncate">Reparații rapide</div>
+                    <div className="text-xs text-slate-500">Mihai R. · Timișoara</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <span className="text-xs text-blue-200/70 ml-1">4.9</span>
+                    <span className="text-xs text-slate-500 ml-1">4.9</span>
                   </div>
-                  <span className="text-xs font-bold text-emerald-400">80 RON</span>
+                  <span className="text-xs font-bold text-emerald-600">80 RON</span>
                 </div>
               </div>
 
               {/* Card 4 */}
-              <div className="absolute bottom-8 right-4 w-48 rounded-2xl p-4"
-                style={{ transform: "rotate(-2deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
+              <div className="absolute bottom-8 right-4 w-48 rounded-2xl p-4 bg-white"
+                style={{ transform: "rotate(-2deg)", border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 20px 50px rgba(30,64,175,0.15)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-green-500/30 flex items-center justify-center text-green-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-500 shrink-0">
                     <Truck className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white truncate">Transport</div>
-                    <div className="text-xs text-blue-200/70">Cluj Express</div>
+                    <div className="text-sm font-semibold text-slate-900 truncate">Transport</div>
+                    <div className="text-xs text-slate-500">Cluj Express</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <Star className="h-3 w-3 text-white/30" />
-                    <span className="text-xs text-blue-200/70 ml-1">4.7</span>
+                    <Star className="h-3 w-3 text-slate-200" />
+                    <span className="text-xs text-slate-500 ml-1">4.7</span>
                   </div>
-                  <span className="text-xs font-bold text-emerald-400">120 RON</span>
+                  <span className="text-xs font-bold text-emerald-600">120 RON</span>
                 </div>
               </div>
 
               {/* Centre glow */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-blue-500 blur-3xl opacity-20 pointer-events-none" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-blue-300 blur-3xl opacity-30 pointer-events-none" />
             </div>
           </div>
         </div>
 
         {/* Stats bar */}
-        <div className="relative border-t border-white/20" style={{ background: "rgba(0,0,0,0.2)" }}>
+        <div className="relative border-t border-slate-200 bg-white/60">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-blue-500/25 text-blue-300"><Users className="h-5 w-5" /></div>
+                <div className="p-2 rounded-xl bg-blue-100 text-primary"><Users className="h-5 w-5" /></div>
                 <div>
-                  <div className="text-lg font-extrabold text-white tracking-tight">500+</div>
-                  <div className="text-xs text-blue-200/70">Utilizatori activi</div>
+                  <div className="text-lg font-extrabold text-slate-900 tracking-tight">500+</div>
+                  <div className="text-xs text-slate-500">Utilizatori activi</div>
                 </div>
               </div>
-              <div className="w-px h-10 bg-white/20 hidden sm:block" />
+              <div className="w-px h-10 bg-slate-200 hidden sm:block" />
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-purple-500/25 text-purple-300"><Briefcase className="h-5 w-5" /></div>
+                <div className="p-2 rounded-xl bg-purple-100 text-purple-600"><Briefcase className="h-5 w-5" /></div>
                 <div>
-                  <div className="text-lg font-extrabold text-white tracking-tight">200+</div>
-                  <div className="text-xs text-blue-200/70">Firme locale</div>
+                  <div className="text-lg font-extrabold text-slate-900 tracking-tight">200+</div>
+                  <div className="text-xs text-slate-500">Firme locale</div>
                 </div>
               </div>
-              <div className="w-px h-10 bg-white/20 hidden sm:block" />
+              <div className="w-px h-10 bg-slate-200 hidden sm:block" />
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-emerald-500/25 text-emerald-300"><MapPin className="h-5 w-5" /></div>
+                <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600"><MapPin className="h-5 w-5" /></div>
                 <div>
-                  <div className="text-lg font-extrabold text-white tracking-tight">20+</div>
-                  <div className="text-xs text-blue-200/70">Orașe acoperite</div>
+                  <div className="text-lg font-extrabold text-slate-900 tracking-tight">20+</div>
+                  <div className="text-xs text-slate-500">Orașe acoperite</div>
                 </div>
               </div>
             </div>

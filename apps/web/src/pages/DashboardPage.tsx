@@ -93,15 +93,20 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
   if (user.businessStatus === "approved") {
     const paid = user.paidUntil && new Date(user.paidUntil) > new Date();
     if (!paid) {
+      const neverHadSub = !user.paidUntil;
       return (
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-4">
           <div className="bg-orange-100 rounded-xl p-2.5 flex-shrink-0">
             <AlertCircle className="h-5 w-5 text-orange-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-orange-900 text-sm">Abonamentul a expirat</h3>
+            <h3 className="font-semibold text-orange-900 text-sm">
+              {neverHadSub ? "Cont aprobat — abonament neactivat" : "Abonamentul a expirat"}
+            </h3>
             <p className="text-xs text-orange-700/80 mt-0.5">
-              Anunțurile tale sunt ascunse. Contactează administratorul pentru reînnoire.
+              {neverHadSub
+                ? "Contul tău de firmă a fost aprobat. Contactează administratorul pentru activarea abonamentului."
+                : "Anunțurile tale sunt ascunse. Contactează administratorul pentru reînnoire."}
             </p>
           </div>
         </div>

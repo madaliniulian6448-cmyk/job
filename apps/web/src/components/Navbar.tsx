@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, useInvalidateAuth } from "../lib/auth";
 import { apiFetch } from "../lib/api";
 import { toast } from "sonner";
-import { Building2, LogIn, LogOut, LayoutDashboard, Shield, Menu, X, Settings, User, Heart, Bell, Info } from "lucide-react";
+import { Building2, LogIn, LogOut, LayoutDashboard, Shield, Menu, X, Settings, User, Heart, Bell, Info, Home } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -68,6 +68,9 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
+            <Link to="/" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+              <Home className="h-4 w-4" />Acasă
+            </Link>
             <Link to={user ? "/dashboard" : "/login"} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/dashboard") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
               <LayoutDashboard className="h-4 w-4" />Dashboard
             </Link>
@@ -160,6 +163,9 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-white px-4 py-4 flex flex-col gap-1 shadow-lg">
+          <Link to="/" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
+            <Home className="h-4 w-4 text-primary" />Acasă
+          </Link>
           <Link to={user ? "/dashboard" : "/login"} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
             <LayoutDashboard className="h-4 w-4 text-primary" />Dashboard
           </Link>

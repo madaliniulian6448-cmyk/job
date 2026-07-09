@@ -361,17 +361,18 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-2">
             {/* Sort */}
-            <div className="flex items-center gap-1.5 bg-white border border-border rounded-lg px-3 py-1.5 text-sm">
-              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-              <select
-                value={sort}
-                onChange={e => setSort(e.target.value)}
-                className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
-              >
-                <option value="newest">Cele mai noi</option>
-                <option value="price_asc">Preț crescător</option>
-                <option value="price_desc">Preț descrescător</option>
-              </select>
+            <div className="flex items-center gap-1.5 bg-white border border-border rounded-lg px-1 py-0.5 text-sm">
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground ml-2 flex-shrink-0" />
+              <Select value={sort} onValueChange={setSort}>
+                <SelectTrigger className="border-0 shadow-none bg-transparent focus:ring-0 h-auto px-2 py-1 text-sm font-medium text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Cele mai noi</SelectItem>
+                  <SelectItem value="price_asc">Preț crescător</SelectItem>
+                  <SelectItem value="price_desc">Preț descrescător</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {(city || categoryId || search) && (
               <button

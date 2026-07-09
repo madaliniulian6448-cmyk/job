@@ -68,16 +68,14 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
+            {user && (
+              <Link to="/dashboard" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/dashboard") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+                <LayoutDashboard className="h-4 w-4" />Dashboard
+              </Link>
+            )}
             <Link to="/despre" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/despre") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
               <Info className="h-4 w-4" />Despre
             </Link>
-            {user && (
-              <>
-                <Link to="/dashboard" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/dashboard") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
-                  <LayoutDashboard className="h-4 w-4" />Dashboard
-                </Link>
-              </>
-            )}
             {user?.role === "admin" && (
               <Link to="/admin" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/admin") ? "bg-orange-50 text-orange-700" : "text-orange-600 hover:bg-orange-50"}`}>
                 <Shield className="h-4 w-4" />Admin
@@ -164,10 +162,6 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-white px-4 py-4 flex flex-col gap-1 shadow-lg">
-          <Link to="/" className="px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>Acasă</Link>
-          <Link to="/despre" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
-            <Info className="h-4 w-4 text-muted-foreground" />Despre noi
-          </Link>
           {user && (
             <>
               <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
@@ -194,6 +188,9 @@ export default function Navbar() {
               <Shield className="h-4 w-4" />Panou Admin
             </Link>
           )}
+          <Link to="/despre" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
+            <Info className="h-4 w-4 text-muted-foreground" />Despre noi
+          </Link>
           <div className="border-t border-border pt-2 mt-1 flex flex-col gap-1">
             {user ? (
               <>

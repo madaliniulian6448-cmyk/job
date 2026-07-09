@@ -122,11 +122,12 @@ router.post("/", requireAuth, async (req, res) => {
     .values({
       userId,
       title: data.title,
-      description: data.description,
+      description: data.description ?? null,
       price: data.price !== undefined ? String(data.price) : null,
       phone: data.phone,
       city: data.city,
       categoryId: data.categoryId ? Number(data.categoryId) : null,
+      images: data.images ?? [],
     })
     .returning();
   res.status(201).json({ listing: row });
@@ -152,6 +153,7 @@ router.put("/:id", requireAuth, async (req, res) => {
       ...(data.phone !== undefined && { phone: data.phone }),
       ...(data.city !== undefined && { city: data.city }),
       ...(data.categoryId !== undefined && { categoryId: Number(data.categoryId) }),
+      ...(data.images !== undefined && { images: data.images }),
     })
     .where(eq(listings.id, id))
     .returning();

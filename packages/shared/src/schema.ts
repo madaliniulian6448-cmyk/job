@@ -65,6 +65,7 @@ export const listings = pgTable("listings", {
   price: numeric("price", { precision: 10, scale: 2 }),
   phone: varchar("phone", { length: 50 }).notNull(),
   city: varchar("city", { length: 120 }).notNull(),
+  images: text("images").array().notNull().default([]),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

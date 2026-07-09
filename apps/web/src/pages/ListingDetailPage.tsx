@@ -19,6 +19,7 @@ interface FullListing {
   isActive: boolean;
   createdAt: string;
   userId: number;
+  images: string[];
   owner: {
     id: number;
     name: string;
@@ -192,7 +193,13 @@ export default function ListingDetailPage() {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-5">
           {/* Listing card */}
-          <div className="bg-white rounded-2xl border border-border shadow-card p-6">
+          <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden">
+            {/* Cover photo */}
+            {listing.images?.length > 0 && (
+              <img src={listing.images[0]} alt={listing.title} className="w-full h-64 object-cover" />
+            )}
+
+            <div className="p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="flex-1 min-w-0">
                 {listing.category && (
@@ -222,6 +229,15 @@ export default function ListingDetailPage() {
               <p className="text-muted-foreground leading-relaxed mb-4">{listing.description}</p>
             )}
 
+            {/* Photo grid */}
+            {listing.images?.length > 1 && (
+              <div className={`grid gap-2 mb-4 ${listing.images.length === 2 ? "grid-cols-2" : listing.images.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+                {listing.images.slice(1).map((url, i) => (
+                  <img key={i} src={url} alt="" className="w-full h-28 object-cover rounded-xl" />
+                ))}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-3 pt-4 border-t border-border/60 text-sm">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <MapPin className="h-4 w-4" />{listing.city}
@@ -236,6 +252,7 @@ export default function ListingDetailPage() {
                 </span>
               )}
             </div>
+            </div>{/* end p-6 */}
           </div>
 
           {/* Reviews section */}

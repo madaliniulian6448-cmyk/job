@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import {
-  Plus, Pencil, Trash2, ToggleLeft, ToggleRight, MapPin,
+  Pencil, Trash2, ToggleLeft, ToggleRight, MapPin,
   Building2, Star, AlertCircle, CheckCircle, Clock, X,
-  Phone, Tag, TrendingUp, Eye, EyeOff, ArrowRight, Lock, Settings
+  Phone, Tag, Eye, EyeOff, ArrowRight, Lock, Settings,
+  ImagePlus, Briefcase
 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
 interface Listing {
   id: number;
@@ -20,6 +20,7 @@ interface Listing {
   city: string;
   isActive: boolean;
   categoryId: number | null;
+  images: string[];
   createdAt: string;
 }
 
@@ -45,12 +46,12 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
         <div className="flex-1">
           <h3 className="font-bold text-blue-900 text-sm">Postarea anunțurilor necesită un cont de firmă</h3>
           <p className="text-xs text-blue-700/80 mt-0.5">
-            Contul simplu permite căutare și recenzii. Fă upgrade pentru a posta servicii.
+            Înregistrează-ți firma, creează anunțul și plătești doar după ce ești gata.
           </p>
         </div>
         <Link to="/business-upgrade"
           className="flex-shrink-0 inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm">
-          Upgrade la firmă <ArrowRight className="h-3.5 w-3.5" />
+          Înregistrează firma <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     );
@@ -62,10 +63,10 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
         <div className="bg-amber-100 rounded-xl p-2.5 flex-shrink-0">
           <Clock className="h-5 w-5 text-amber-600" />
         </div>
-        <div>
-          <h3 className="font-semibold text-amber-900 text-sm">Cererea de firmă este în verificare</h3>
+        <div className="flex-1">
+          <h3 className="font-semibold text-amber-900 text-sm">Contul de firmă este în verificare</h3>
           <p className="text-xs text-amber-700/80 mt-0.5">
-            Administratorii verifică datele tale. Vei putea posta anunțuri după aprobare.
+            Administratorii verifică datele. Anunțul tău este creat și va deveni vizibil după aprobare și plată.
           </p>
         </div>
       </div>
@@ -93,7 +94,6 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
   if (user.businessStatus === "approved") {
     const paid = user.paidUntil && new Date(user.paidUntil) > new Date();
     if (!paid) {
-      const neverHadSub = !user.paidUntil;
       return (
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-4">
           <div className="bg-orange-100 rounded-xl p-2.5 flex-shrink-0">
@@ -101,12 +101,12 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
           </div>
           <div>
             <h3 className="font-semibold text-orange-900 text-sm">
-              {neverHadSub ? "Cont aprobat — abonament neactivat" : "Abonamentul a expirat"}
+              {!user.paidUntil ? "Cont aprobat — în așteptarea plății" : "Abonamentul a expirat"}
             </h3>
             <p className="text-xs text-orange-700/80 mt-0.5">
-              {neverHadSub
-                ? "Contul tău de firmă a fost aprobat. Contactează administratorul pentru activarea abonamentului."
-                : "Anunțurile tale sunt ascunse. Contactează administratorul pentru reînnoire."}
+              {!user.paidUntil
+                ? "Contul tău a fost aprobat! Contactează administratorul pentru activarea abonamentului (30 lei)."
+                : "Anunțul tău este ascuns. Contactează administratorul pentru reînnoire."}
             </p>
           </div>
         </div>
@@ -128,7 +128,7 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
             )}
           </h3>
           <p className="text-xs text-emerald-700/80 mt-0.5">
-            Abonament activ până pe <strong>{paidDate}</strong>. Anunțurile sunt vizibile.
+            Abonament activ până pe <strong>{paidDate}</strong>. Anunțul tău este vizibil.
           </p>
         </div>
       </div>
@@ -141,22 +141,26 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
 export default function DashboardPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: "", description: "", price: "",
-    phone: user?.phone || "", city: user?.city || "", categoryId: ""
+    phone: user?.phone || "", city: user?.city || "", categoryId: "",
   });
+  const [formImages, setFormImages] = useState<string[]>([]);
 
-  const canPost = user?.businessType !== "none"
-    && user?.businessStatus === "approved"
+  const hasBusiness = user?.businessType !== "none";
+  const isActive = user?.businessStatus === "approved"
     && !!user?.paidUntil
     && new Date(user.paidUntil) > new Date();
 
+  // Load listings for all business users (even pending/not-paid)
   const { data: listingsData, isLoading } = useQuery({
     queryKey: ["myListings"],
     queryFn: () => apiFetch("/listings/mine"),
-    enabled: canPost,
+    enabled: hasBusiness,
   });
 
   const { data: categoriesData } = useQuery({
@@ -164,18 +168,84 @@ export default function DashboardPage() {
     queryFn: () => apiFetch("/categories"),
   });
 
-  const listings: Listing[] = listingsData?.listings ?? [];
+  const listing: Listing | undefined = (listingsData?.listings ?? [])[0];
   const categories: Category[] = categoriesData?.categories ?? [];
+
+  async function uploadPhoto(file: File): Promise<string> {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      credentials: "include",
+      body: fd,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error ?? "Eroare la upload");
+    }
+    return (await res.json()).url as string;
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    if (formImages.length + files.length > 5) {
+      toast.error("Poți adăuga maxim 5 poze");
+      return;
+    }
+    setUploading(true);
+    try {
+      const urls = await Promise.all(files.map(uploadPhoto));
+      setFormImages(prev => [...prev, ...urls]);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  function removePhoto(url: string) {
+    setFormImages(prev => prev.filter(u => u !== url));
+  }
+
+  function startEdit(l: Listing) {
+    setForm({
+      title: l.title,
+      description: l.description || "",
+      price: l.price || "",
+      phone: l.phone,
+      city: l.city,
+      categoryId: l.categoryId ? String(l.categoryId) : "",
+    });
+    setFormImages(l.images ?? []);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetForm() {
+    setShowForm(false);
+    setForm({ title: "", description: "", price: "", phone: user?.phone || "", city: user?.city || "", categoryId: "" });
+    setFormImages([]);
+  }
+
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const body = { ...form, price: form.price || undefined, categoryId: form.categoryId || undefined };
-      if (editId) return apiFetch(`/listings/${editId}`, { method: "PUT", body: JSON.stringify(body) });
-      return apiFetch("/listings", { method: "POST", body: JSON.stringify(body) });
+      if (!listing) return;
+      const body = {
+        ...form,
+        price: form.price || undefined,
+        categoryId: form.categoryId || undefined,
+        images: formImages,
+      };
+      return apiFetch(`/listings/${listing.id}`, { method: "PUT", body: JSON.stringify(body) });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["myListings"] });
-      toast.success(editId ? "Anunț actualizat!" : "Anunț publicat!");
+      toast.success("Anunț actualizat!");
       resetForm();
     },
     onError: (err: any) => toast.error(err.message),
@@ -189,30 +259,12 @@ export default function DashboardPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => apiFetch(`/listings/${id}`, { method: "DELETE" }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["myListings"] }); toast.success("Anunț șters"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["myListings"] });
+      toast.success("Anunț șters");
+    },
     onError: (err: any) => toast.error(err.message),
   });
-
-  function startEdit(listing: Listing) {
-    setEditId(listing.id);
-    setForm({
-      title: listing.title, description: listing.description || "",
-      price: listing.price || "", phone: listing.phone,
-      city: listing.city, categoryId: listing.categoryId ? String(listing.categoryId) : "",
-    });
-    setShowForm(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function resetForm() {
-    setShowForm(false); setEditId(null);
-    setForm({ title: "", description: "", price: "", phone: user?.phone || "", city: user?.city || "", categoryId: "" });
-  }
-
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }));
-
-  const activeCount = listings.filter(l => l.isActive).length;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -222,45 +274,21 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-extrabold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">Bun venit, <strong>{user?.name}</strong>!</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link to="/settings"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-border hover:bg-secondary transition-colors text-muted-foreground">
-            <Settings className="h-4 w-4" />Setări
-          </Link>
-          {canPost && listings.length === 0 && (
-            <button onClick={() => { resetForm(); setShowForm(true); }}
-              className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
-              <Plus className="h-4 w-4" />Adaugă anunțul firmei
-            </button>
-          )}
-        </div>
+        <Link to="/settings"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-border hover:bg-secondary transition-colors text-muted-foreground">
+          <Settings className="h-4 w-4" />Setări
+        </Link>
       </div>
 
       {/* Status Banner */}
       {user && <div className="mb-6"><StatusBanner user={user} /></div>}
-
-      {/* Stats — only for businesses with a listing */}
-      {canPost && listings.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          {[
-            { label: "Stare anunț", value: activeCount > 0 ? "Activ" : "Inactiv", icon: activeCount > 0 ? <Eye className="h-5 w-5 text-emerald-600" /> : <EyeOff className="h-5 w-5 text-muted-foreground" />, bg: activeCount > 0 ? "bg-emerald-50" : "bg-secondary" },
-            { label: "Vizibilitate", value: activeCount > 0 ? "Vizibil" : "Ascuns", icon: <TrendingUp className="h-5 w-5 text-primary" />, bg: "bg-accent" },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-border p-4 shadow-card">
-              <div className={`${stat.bg} rounded-xl p-2 w-fit mb-3`}>{stat.icon}</div>
-              <div className="text-xl font-extrabold text-foreground">{stat.value}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Simple user — quick links */}
       {user?.businessType === "none" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <Link to="/" className="bg-white rounded-2xl border border-border shadow-card p-5 hover:shadow-card-hover transition-all group">
             <div className="bg-primary/10 rounded-xl p-2.5 w-fit mb-3">
-              <TrendingUp className="h-5 w-5 text-primary" />
+              <Eye className="h-5 w-5 text-primary" />
             </div>
             <h3 className="font-bold text-sm group-hover:text-primary transition-colors">Explorează servicii</h3>
             <p className="text-xs text-muted-foreground mt-1">Găsește servicii din orașul tău</p>
@@ -269,141 +297,219 @@ export default function DashboardPage() {
             <div className="bg-amber-50 rounded-xl p-2.5 w-fit mb-3">
               <Building2 className="h-5 w-5 text-amber-600" />
             </div>
-            <h3 className="font-bold text-sm group-hover:text-primary transition-colors">Devino firmă</h3>
-            <p className="text-xs text-muted-foreground mt-1">Postează servicii și ajunge la clienți</p>
+            <h3 className="font-bold text-sm group-hover:text-primary transition-colors">Înregistrează-ți firma</h3>
+            <p className="text-xs text-muted-foreground mt-1">Creează anunțul și plătești după aprobare</p>
           </Link>
         </div>
       )}
 
-      {/* Form */}
-      {showForm && canPost && (
-        <div className="bg-white rounded-2xl border border-border shadow-card p-6 mb-8">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-lg">{editId ? "Editează anunțul" : "Anunț nou"}</h2>
-            <button onClick={resetForm} className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary transition-colors">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <form onSubmit={e => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold mb-1.5">Titlu *</label>
-              <input required value={form.title} onChange={set("title")}
-                className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
-                placeholder="ex: Mâncare gătită acasă, livrare gratuită" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-1.5">Descriere</label>
-              <textarea value={form.description} onChange={set("description")} rows={3}
-                className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors resize-none"
-                placeholder="Descrie serviciul sau produsul tău..." />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold mb-1.5">Preț (lei)</label>
-                <input type="number" min={0} step="0.01" value={form.price} onChange={set("price")}
-                  className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
-                  placeholder="ex: 25" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1.5">Categorie</label>
-                <select value={form.categoryId} onChange={set("categoryId")}
-                  className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors bg-white">
-                  <option value="">Fără categorie</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1.5">Telefon *</label>
-                <input required value={form.phone} onChange={set("phone")}
-                  className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
-                  placeholder="07xx xxx xxx" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-1.5">Oraș *</label>
-                <Select value={form.city || "__none"} onValueChange={v => setForm(f => ({ ...f, city: v === "__none" ? "" : v }))}>
-                  <SelectTrigger className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:ring-0 focus:border-primary transition-colors bg-white h-auto">
-                    <SelectValue placeholder="Selectează" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none">Selectează</SelectItem>
-                    {CITIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button type="submit" disabled={saveMutation.isPending}
-                className="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm">
-                {saveMutation.isPending ? "Se salvează..." : editId ? "Actualizează" : "Publică anunțul"}
-              </button>
-              <button type="button" onClick={resetForm}
-                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground border-2 border-border hover:bg-secondary transition-colors">
-                Anulează
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Listing — only for businesses */}
-      {canPost && (
+      {/* Business section */}
+      {hasBusiness && (
         <div>
-          <h2 className="text-lg font-bold mb-4">Anunțul firmei mele</h2>
-          {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(1)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-5 h-20 animate-pulse" />)}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">Anunțul firmei mele</h2>
+          </div>
+
+          {/* Edit form */}
+          {showForm && listing && (
+            <div className="bg-white rounded-2xl border border-border shadow-card p-6 mb-6">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-bold text-lg">Editează anunțul</h2>
+                <button onClick={resetForm} className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary transition-colors">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <form onSubmit={e => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-1.5">Titlu *</label>
+                  <input required value={form.title} onChange={set("title")}
+                    className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                    placeholder="ex: Frizerie bărbați, Reparații rapide" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1.5">Descriere</label>
+                  <textarea value={form.description} onChange={set("description")} rows={3}
+                    className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors resize-none"
+                    placeholder="Descrie serviciul sau produsul tău..." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-1.5">Preț (lei)</label>
+                    <input type="number" min={0} step="0.01" value={form.price} onChange={set("price")}
+                      className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                      placeholder="ex: 30" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-1.5">Categorie</label>
+                    <select value={form.categoryId} onChange={set("categoryId")}
+                      className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors bg-white">
+                      <option value="">Fără categorie</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-1.5">Telefon *</label>
+                    <input required value={form.phone} onChange={set("phone")}
+                      className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                      placeholder="07xx xxx xxx" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-1.5">Oraș *</label>
+                    <select value={form.city} onChange={set("city")}
+                      className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors bg-white">
+                      <option value="">Selectează</option>
+                      {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Photo management */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Poze ({formImages.length}/5)
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formImages.map((url, i) => (
+                      <div key={i} className="relative group w-20 h-20 rounded-xl overflow-hidden border-2 border-border">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(url)}
+                          className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                        >
+                          <X className="h-5 w-5 text-white" />
+                        </button>
+                      </div>
+                    ))}
+                    {formImages.length < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-accent/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                      >
+                        {uploading
+                          ? <div className="h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          : <><ImagePlus className="h-5 w-5" /><span className="text-xs">Adaugă</span></>
+                        }
+                      </button>
+                    )}
+                  </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoChange} />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button type="submit" disabled={saveMutation.isPending}
+                    className="flex-1 bg-primary text-white py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm">
+                    {saveMutation.isPending ? "Se salvează..." : "Actualizează anunțul"}
+                  </button>
+                  <button type="button" onClick={resetForm}
+                    className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground border-2 border-border hover:bg-secondary transition-colors">
+                    Anulează
+                  </button>
+                </div>
+              </form>
             </div>
-          ) : listings.length === 0 ? (
+          )}
+
+          {isLoading ? (
+            <div className="bg-white rounded-2xl border border-border p-5 h-32 animate-pulse" />
+          ) : !listing ? (
             <div className="bg-white rounded-2xl border border-border p-12 text-center shadow-card">
               <div className="bg-secondary rounded-full h-14 w-14 flex items-center justify-center mx-auto mb-4">
                 <Building2 className="h-7 w-7 text-muted-foreground" />
               </div>
-              <h3 className="font-bold mb-2">Niciun anunț publicat</h3>
-              <p className="text-sm text-muted-foreground mb-4">Adaugă anunțul firmei tale — descriere, preț, contact. Ai dreptul la un singur anunț.</p>
-              <button onClick={() => setShowForm(true)}
-                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors">
-                <Plus className="h-4 w-4" />Adaugă anunțul firmei
-              </button>
+              <h3 className="font-bold mb-2">Niciun anunț creat</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {user?.businessStatus === "pending"
+                  ? "Cererea ta este în verificare. Dacă dorești să modifici anunțul, retrimite cererea."
+                  : "Nu ai creat încă anunțul firmei tale."}
+              </p>
+              <Link
+                to="/business-upgrade"
+                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
+              >
+                {user?.businessStatus === "rejected" ? "Retrimite cererea" : "Creează anunțul"}
+              </Link>
             </div>
           ) : (
-            <div className="space-y-3">
-              {listings.map(listing => (
-                <div key={listing.id}
-                  className={`bg-white rounded-2xl border shadow-card p-5 flex items-start gap-4 transition-all ${listing.isActive ? "border-border" : "border-border/50 opacity-60"}`}>
+            <div className={`bg-white rounded-2xl border shadow-card overflow-hidden transition-all ${listing.isActive && isActive ? "border-border" : "border-border/50"}`}>
+              {/* Cover photo */}
+              {listing.images?.length > 0 && (
+                <div className="relative">
+                  <img src={listing.images[0]} alt="" className="w-full h-48 object-cover" />
+                  {listing.images.length > 1 && (
+                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">
+                      +{listing.images.length - 1} poze
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="p-5">
+                <div className="flex items-start gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm truncate">{listing.title}</h3>
-                      {listing.isActive
-                        ? <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">Activ</span>
-                        : <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-medium flex-shrink-0">Inactiv</span>
-                      }
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="font-semibold truncate">{listing.title}</h3>
+                      {/* Status badge */}
+                      {!isActive && user?.businessStatus === "pending" && (
+                        <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium flex-shrink-0 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />În verificare
+                        </span>
+                      )}
+                      {!isActive && user?.businessStatus === "approved" && (
+                        <span className="text-xs bg-orange-50 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-medium flex-shrink-0">
+                          Neactivat
+                        </span>
+                      )}
+                      {isActive && listing.isActive && (
+                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">Activ</span>
+                      )}
+                      {isActive && !listing.isActive && (
+                        <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-medium flex-shrink-0">Inactiv</span>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{listing.city}</span>
                       <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{listing.phone}</span>
                       {listing.price && <span className="font-semibold text-foreground">{listing.price} lei</span>}
                     </div>
+                    {listing.description && (
+                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{listing.description}</p>
+                    )}
                   </div>
+
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Link to={`/listing/${listing.id}`}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent transition-colors text-xs">
+                      className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent transition-colors">
                       <Eye className="h-4 w-4" />
                     </Link>
-                    <button onClick={() => toggleMutation.mutate(listing.id)} disabled={toggleMutation.isPending}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                      {listing.isActive ? <ToggleRight className="h-5 w-5 text-primary" /> : <ToggleLeft className="h-5 w-5" />}
-                    </button>
+                    {isActive && (
+                      <button onClick={() => toggleMutation.mutate(listing.id)} disabled={toggleMutation.isPending}
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        {listing.isActive ? <ToggleRight className="h-5 w-5 text-primary" /> : <ToggleLeft className="h-5 w-5" />}
+                      </button>
+                    )}
                     <button onClick={() => startEdit(listing)}
                       className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                       <Pencil className="h-4 w-4" />
                     </button>
-                    <button onClick={() => { if (confirm("Ștergi anunțul?")) deleteMutation.mutate(listing.id); }}
+                    <button onClick={() => { if (confirm("Ștergi anunțul firmei?")) deleteMutation.mutate(listing.id); }}
                       className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-              ))}
+
+                {/* Photo strip */}
+                {listing.images?.length > 1 && (
+                  <div className="grid grid-cols-4 gap-1.5 mt-4">
+                    {listing.images.slice(1, 5).map((url, i) => (
+                      <img key={i} src={url} alt="" className="w-full h-14 object-cover rounded-lg" />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

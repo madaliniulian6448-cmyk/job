@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from "path";
 
 import authRoutes from "./routes/auth";
 import listingsRoutes from "./routes/listings";
@@ -12,6 +13,7 @@ import reviewsRoutes from "./routes/reviews";
 import profileRoutes from "./routes/profile";
 import favoritesRoutes from "./routes/favorites";
 import notificationsRoutes from "./routes/notifications";
+import uploadRoutes from "./routes/upload";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
@@ -43,6 +45,8 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+app.use("/api/uploads", express.static(path.join(process.cwd(), "public/uploads")));
+app.use("/api/upload", uploadRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/listings", listingsRoutes);
 app.use("/api/categories", categoriesRoutes);

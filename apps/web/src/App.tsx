@@ -14,6 +14,7 @@ import FavoritesPage from "./pages/FavoritesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AboutPage from "./pages/AboutPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import CategoryPage from "./pages/CategoryPage";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -51,6 +52,8 @@ export default function App() {
           <Route path="/favorite" element={<RequireAuth><FavoritesPage /></RequireAuth>} />
           <Route path="/notificari" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
           <Route path="/despre" element={<AboutPage />} />
+          {/* SEO category pages: /:slug e.g. /frizerie or /frizerie-bucuresti */}
+          <Route path="/:slug" element={<CategoryPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

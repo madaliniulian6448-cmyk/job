@@ -22,6 +22,8 @@ interface Listing {
   categoryId: number | null;
   images: string[];
   createdAt: string;
+  viewCount: number;
+  contactClickCount: number;
 }
 
 interface Category {
@@ -537,6 +539,16 @@ export default function DashboardPage() {
                       <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{listing.city}</span>
                       <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{listing.phone}</span>
                       {listing.price && <span className="font-semibold text-foreground">{listing.price} lei</span>}
+                    </div>
+                    <div className="flex gap-4 mt-2 text-xs">
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <Eye className="h-3 w-3" />
+                        <span className="font-semibold text-foreground">{listing.viewCount ?? 0}</span> vizualizări
+                      </span>
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <Phone className="h-3 w-3" />
+                        <span className="font-semibold text-foreground">{listing.contactClickCount ?? 0}</span> click-uri contact
+                      </span>
                     </div>
                     {listing.description && (
                       <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{listing.description}</p>

@@ -50,7 +50,12 @@ export const businessRegisterSchema = z.object({
   }),
 });
 
+export const reportSchema = z.object({
+  reason: z.string().min(5, "Motivul trebuie să aibă cel puțin 5 caractere"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type BusinessUpgradeInput = z.infer<typeof businessUpgradeSchema>;
 export type ListingInput = z.infer<typeof listingSchema>;
+export type ReportInput = z.infer<typeof reportSchema>;

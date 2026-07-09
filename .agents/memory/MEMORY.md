@@ -1,0 +1,3 @@
+- [Promoted-sort stability](promoted-sort.md) — client-side sort must always key on active-promo status first before price/date, or promoted listings slip behind normal ones.
+- [Similar-listings visibility](similar-listings-visibility.md) — visibility filters (approved + paidUntil) must be in the SQL WHERE clause before LIMIT, not applied in JS after limiting.
+- [Report endpoint hardening](report-hardening.md) — always check NaN on numeric route params and verify listing existence before DB insert; rely on DB error codes only for duplicate-key (23505) cases.

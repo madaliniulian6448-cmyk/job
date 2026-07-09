@@ -24,6 +24,11 @@ export const businessStatusEnum = pgEnum("business_status", [
   "approved",
   "rejected",
 ]);
+export const reportStatusEnum = pgEnum("report_status", [
+  "pending",
+  "resolved",
+  "dismissed",
+]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -46,6 +51,7 @@ export const users = pgTable("users", {
   proofUrl: text("proof_url"),
   paidUntil: timestamp("paid_until"),
   businessRequestedAt: timestamp("business_requested_at"),
+  isVerified: boolean("is_verified").notNull().default(false),
 });
 
 export const categories = pgTable("categories", {
@@ -67,6 +73,10 @@ export const listings = pgTable("listings", {
   city: varchar("city", { length: 120 }).notNull(),
   images: text("images").array().notNull().default([]),
   isActive: boolean("is_active").notNull().default(true),
+  isPromoted: boolean("is_promoted").notNull().default(false),
+  promotedUntil: timestamp("promoted_until"),
+  viewCount: integer("view_count").notNull().default(0),
+  contactClickCount: integer("contact_click_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -110,16 +120,37 @@ export const notifications = pgTable("notifications", {
   type: varchar("type", { length: 50 }).notNull(),
   message: text("message").notNull(),
   isRead: boolean("is_read").notNull().default(false),
-  listingId: integer("listing_id").references(() => listings.id, { onDelete: "set null" }),
+  listingId: integer("listing_id").references(() => listings.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export type Favorite = typeof favorites.$inferSelect;
-export type Notification = typeof notifications.$inferSelect;
+export const reports = pgTable(
+  "reports",
+  {
+    id: serial("id").primaryKey(),
+    listingId: integer("listing_id")
+      .notNull()
+      .references(() => listings.id, { onDelete: "cascade" }),
+    reporterId: integer("reporter_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reason: text("reason").notNull(),
+    status: reportStatusEnum("status").notNull().default("pending"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    unique("reports_listing_reporter_unique").on(t.listingId, t.reporterId),
+  ]
+);
+
+// --- Relations ---
 
 export const usersRelations = relations(users, ({ many }) => ({
   listings: many(listings),
   reviews: many(reviews),
+  reports: many(reports, { relationName: "reporterReports" }),
 }));
 
 export const listingsRelations = relations(listings, ({ one, many }) => ({
@@ -129,12 +160,33 @@ export const listingsRelations = relations(listings, ({ one, many }) => ({
     references: [categories.id],
   }),
   reviews: many(reviews),
+  reports: many(reports),
 }));
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({
-  listing: one(listings, { fields: [reviews.listingId], references: [listings.id] }),
+  listing: one(listings, {
+    fields: [reviews.listingId],
+    references: [listings.id],
+  }),
   user: one(users, { fields: [reviews.userId], references: [users.id] }),
 }));
+
+export const reportsRelations = relations(reports, ({ one }) => ({
+  listing: one(listings, {
+    fields: [reports.listingId],
+    references: [listings.id],
+  }),
+  reporter: one(users, {
+    fields: [reports.reporterId],
+    references: [users.id],
+    relationName: "reporterReports",
+  }),
+}));
+
+// --- Type exports ---
+export type Favorite = typeof favorites.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
+export type Report = typeof reports.$inferSelect;
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

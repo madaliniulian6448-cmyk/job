@@ -1,5 +1,8 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
+import { db } from "./db";
+import { users } from "shared/src/schema";
+import { eq } from "drizzle-orm";
 
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is not set");
@@ -61,11 +64,25 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
   next();
 }
 
-export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.auth || req.auth.role !== "admin") {
+export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.auth) {
     return res.status(403).json({ error: "Acces interzis" });
   }
-  next();
+  // Re-check role from DB so a demotion takes effect immediately,
+  // rather than waiting for the 30-day JWT to expire.
+  try {
+    const [user] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, req.auth.userId))
+      .limit(1);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ error: "Acces interzis" });
+    }
+    next();
+  } catch {
+    return res.status(500).json({ error: "Eroare de server" });
+  }
 }
 
 export { COOKIE_NAME };

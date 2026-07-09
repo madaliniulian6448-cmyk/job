@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { users } from "shared/src/schema";
+import { users, notifications } from "shared/src/schema";
 import { requireAuth, requireAdmin } from "../auth";
 
 const router = Router();
@@ -29,6 +29,14 @@ router.patch("/users/:id/business-status", async (req, res) => {
     .where(eq(users.id, id))
     .returning();
   if (!row) return res.status(404).json({ error: "Utilizator inexistent" });
+
+  if (status === "approved" || status === "rejected") {
+    const msg = status === "approved"
+      ? "Contul tău de firmă a fost aprobat! Poți acum să publici anunțuri."
+      : "Cererea ta de cont de firmă a fost respinsă. Contactează-ne pentru mai multe detalii.";
+    await db.insert(notifications).values({ userId: id, type: `business_${status}`, message: msg }).catch(() => {});
+  }
+
   res.json({ user: publicUser(row) });
 });
 

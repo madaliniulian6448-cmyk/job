@@ -86,6 +86,36 @@ export const reviews = pgTable(
   (t) => [unique("reviews_listing_user_unique").on(t.listingId, t.userId)]
 );
 
+export const favorites = pgTable(
+  "favorites",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    listingId: integer("listing_id")
+      .notNull()
+      .references(() => listings.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [unique("favorites_user_listing_unique").on(t.userId, t.listingId)]
+);
+
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 50 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").notNull().default(false),
+  listingId: integer("listing_id").references(() => listings.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type Favorite = typeof favorites.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
+
 export const usersRelations = relations(users, ({ many }) => ({
   listings: many(listings),
   reviews: many(reviews),

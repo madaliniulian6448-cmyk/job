@@ -10,6 +10,10 @@ import BusinessUpgradePage from "./pages/BusinessUpgradePage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ListingDetailPage from "./pages/ListingDetailPage";
+import FavoritesPage from "./pages/FavoritesPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import AboutPage from "./pages/AboutPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -44,7 +48,10 @@ export default function App() {
           <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
           <Route path="/business-upgrade" element={<RequireAuth><BusinessUpgradePage /></RequireAuth>} />
           <Route path="/admin" element={<RequireAdmin><AdminPage /></RequireAdmin>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/favorite" element={<RequireAuth><FavoritesPage /></RequireAuth>} />
+          <Route path="/notificari" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+          <Route path="/despre" element={<AboutPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
     </div>

@@ -10,6 +10,8 @@ import businessRoutes from "./routes/business";
 import adminRoutes from "./routes/admin";
 import reviewsRoutes from "./routes/reviews";
 import profileRoutes from "./routes/profile";
+import favoritesRoutes from "./routes/favorites";
+import notificationsRoutes from "./routes/notifications";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
@@ -48,6 +50,8 @@ app.use("/api/business", businessRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/favorites", favoritesRoutes);
+app.use("/api/notifications", notificationsRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 

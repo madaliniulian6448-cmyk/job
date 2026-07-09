@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
+import { useAuth } from "../lib/auth";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import {
   MapPin, Phone, Tag, Search, Building2, Star,
   Utensils, Scissors, Wrench, Truck, Heart, BookOpen,
-  ArrowRight, CheckCircle, Users, Briefcase, Sparkles, Leaf
+  ArrowRight, CheckCircle, Users, Briefcase, Sparkles, Leaf,
+  ArrowUpDown
 } from "lucide-react";
 
 const CITIES = [
@@ -58,6 +61,10 @@ export default function HomePage() {
   const [city, setCity] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("newest");
+
+  const { user } = useAuth();
+  const qc = useQueryClient();
 
   const { data: listingsData, isLoading } = useQuery({
     queryKey: ["listings", city, categoryId],
@@ -74,16 +81,48 @@ export default function HomePage() {
     queryFn: () => apiFetch("/categories"),
   });
 
+  const { data: favIdsData } = useQuery({
+    queryKey: ["favorite-ids"],
+    queryFn: () => apiFetch("/favorites/ids"),
+    enabled: !!user,
+  });
+  const favIds: number[] = favIdsData?.ids ?? [];
+
+  const toggleFav = useMutation({
+    mutationFn: ({ id, isFav }: { id: number; isFav: boolean }) =>
+      apiFetch(`/favorites/${id}`, { method: isFav ? "DELETE" : "POST" }),
+    onMutate: async ({ id, isFav }) => {
+      await qc.cancelQueries({ queryKey: ["favorite-ids"] });
+      const prev = qc.getQueryData<{ ids: number[] }>(["favorite-ids"]);
+      qc.setQueryData(["favorite-ids"], {
+        ids: isFav ? prev!.ids.filter((x) => x !== id) : [...(prev?.ids ?? []), id],
+      });
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => { qc.setQueryData(["favorite-ids"], ctx?.prev); },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["favorite-ids"] });
+      qc.invalidateQueries({ queryKey: ["favorites"] });
+    },
+  });
+
   const listings: Listing[] = listingsData?.listings ?? [];
   const categories: Category[] = categoriesData?.categories ?? [];
 
-  const filtered = search.trim()
+  const textFiltered = search.trim()
     ? listings.filter(l =>
         l.title.toLowerCase().includes(search.toLowerCase()) ||
         l.description?.toLowerCase().includes(search.toLowerCase()) ||
         l.owner.businessName?.toLowerCase().includes(search.toLowerCase())
       )
     : listings;
+
+  const filtered = [...textFiltered].sort((a, b) => {
+    if (sort === "price_asc") return (parseFloat(a.price ?? "999999")) - (parseFloat(b.price ?? "999999"));
+    if (sort === "price_desc") return (parseFloat(b.price ?? "0")) - (parseFloat(a.price ?? "0"));
+    // newest (default)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
     <div className="min-h-screen">
@@ -307,7 +346,7 @@ export default function HomePage() {
         )}
 
         {/* Results header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
           <div>
             <h2 className="text-xl font-bold text-foreground">
               {categoryId && categories.find(c => String(c.id) === categoryId)
@@ -318,14 +357,29 @@ export default function HomePage() {
               {isLoading ? "Se încarcă..." : `${filtered.length} ${filtered.length === 1 ? "anunț" : "anunțuri"} disponibile`}
             </p>
           </div>
-          {(city || categoryId || search) && (
-            <button
-              onClick={() => { setCity(""); setCategoryId(""); setSearch(""); }}
-              className="text-xs text-primary border border-primary/30 hover:bg-accent px-3 py-1.5 rounded-lg transition-colors"
-            >
-              Resetează
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Sort */}
+            <div className="flex items-center gap-1.5 bg-white border border-border rounded-lg px-3 py-1.5 text-sm">
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <select
+                value={sort}
+                onChange={e => setSort(e.target.value)}
+                className="bg-transparent text-sm font-medium text-foreground outline-none cursor-pointer"
+              >
+                <option value="newest">Cele mai noi</option>
+                <option value="price_asc">Preț crescător</option>
+                <option value="price_desc">Preț descrescător</option>
+              </select>
+            </div>
+            {(city || categoryId || search) && (
+              <button
+                onClick={() => { setCity(""); setCategoryId(""); setSearch(""); }}
+                className="text-xs text-primary border border-primary/30 hover:bg-accent px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Resetează
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Listings grid */}
@@ -358,7 +412,12 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map(listing => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isFav={favIds.includes(listing.id)}
+                onToggleFav={user ? () => toggleFav.mutate({ id: listing.id, isFav: favIds.includes(listing.id) }) : undefined}
+              />
             ))}
           </div>
         )}
@@ -383,14 +442,26 @@ export default function HomePage() {
   );
 }
 
-function ListingCard({ listing }: { listing: Listing }) {
+function ListingCard({ listing, isFav, onToggleFav }: { listing: Listing; isFav?: boolean; onToggleFav?: () => void }) {
   const isBusiness = listing.owner.businessType !== "none";
   const isCompany = listing.owner.businessType === "company";
 
   return (
-    <Link to={`/listing/${listing.id}`} className="group bg-white rounded-2xl border border-border p-5 shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 flex flex-col block">
+    <div className="relative group bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 flex flex-col">
+      {/* Favorite button */}
+      {onToggleFav && (
+        <button
+          onClick={(e) => { e.preventDefault(); onToggleFav(); }}
+          className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-colors ${isFav ? "text-pink-500 bg-pink-50 hover:bg-pink-100" : "text-muted-foreground bg-white hover:text-pink-500 hover:bg-pink-50 opacity-0 group-hover:opacity-100"}`}
+          title={isFav ? "Elimină din favorite" : "Salvează la favorite"}
+        >
+          <Heart className={`h-4 w-4 transition-all ${isFav ? "fill-pink-500" : ""}`} />
+        </button>
+      )}
+
+      <Link to={`/listing/${listing.id}`} className="flex flex-col flex-1 p-5">
       {/* Top badges */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 pr-8">
         {listing.category && (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-accent px-2.5 py-1 rounded-full">
             <Tag className="h-3 w-3" />{listing.category.name}
@@ -440,6 +511,7 @@ function ListingCard({ listing }: { listing: Listing }) {
           <Phone className="h-3 w-3" />{listing.phone}
         </span>
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { and, eq, avg, count, desc } from "drizzle-orm";
 import { db } from "../db";
-import { reviews, users, listings } from "shared/src/schema";
+import { reviews, users, listings, notifications } from "shared/src/schema";
 import { requireAuth } from "../auth";
 import { z } from "zod";
 
@@ -73,6 +73,16 @@ router.post("/listing/:id", requireAuth, async (req, res) => {
     .insert(reviews)
     .values({ listingId, userId, rating: parsed.data.rating, comment: parsed.data.comment })
     .returning();
+
+  // Notify listing owner
+  const reviewer = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const stars = "★".repeat(parsed.data.rating) + "☆".repeat(5 - parsed.data.rating);
+  await db.insert(notifications).values({
+    userId: listing.userId,
+    type: "new_review",
+    message: `${reviewer?.name ?? "Cineva"} a lăsat o recenzie ${stars} pentru anunțul tău "${listing.title}".`,
+    listingId: listing.id,
+  }).catch(() => {}); // non-blocking
 
   res.status(201).json({ review: row });
 });

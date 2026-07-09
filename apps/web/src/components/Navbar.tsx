@@ -68,11 +68,9 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {user && (
-              <Link to="/dashboard" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/dashboard") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
-                <LayoutDashboard className="h-4 w-4" />Dashboard
-              </Link>
-            )}
+            <Link to={user ? "/dashboard" : "/login"} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/dashboard") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+              <LayoutDashboard className="h-4 w-4" />Dashboard
+            </Link>
             <Link to="/despre" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/despre") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
               <Info className="h-4 w-4" />Despre
             </Link>
@@ -162,11 +160,11 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-white px-4 py-4 flex flex-col gap-1 shadow-lg">
+          <Link to={user ? "/dashboard" : "/login"} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
+            <LayoutDashboard className="h-4 w-4 text-primary" />Dashboard
+          </Link>
           {user && (
             <>
-              <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
-                <LayoutDashboard className="h-4 w-4 text-primary" />Dashboard
-              </Link>
               <Link to="/favorite" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
                 <Heart className="h-4 w-4 text-pink-500" />Anunțuri salvate
                 {favCount > 0 && <span className="ml-auto text-xs font-bold text-pink-500">{favCount}</span>}

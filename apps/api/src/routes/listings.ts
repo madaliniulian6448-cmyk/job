@@ -106,6 +106,12 @@ router.post("/", requireAuth, async (req, res) => {
     return res.status(403).json({ error: "Abonamentul firmei a expirat" });
   }
 
+  // Un cont de firmă poate avea un singur anunț
+  const existing = await db.query.listings.findFirst({ where: eq(listings.userId, userId) });
+  if (existing) {
+    return res.status(403).json({ error: "Firma ta are deja un anunț. Poți edita anunțul existent." });
+  }
+
   const parsed = listingSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0].message });

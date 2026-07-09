@@ -227,10 +227,10 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border border-border hover:bg-secondary transition-colors text-muted-foreground">
             <Settings className="h-4 w-4" />Setări
           </Link>
-          {canPost && (
+          {canPost && listings.length === 0 && (
             <button onClick={() => { resetForm(); setShowForm(true); }}
               className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
-              <Plus className="h-4 w-4" />Anunț nou
+              <Plus className="h-4 w-4" />Adaugă anunțul firmei
             </button>
           )}
         </div>
@@ -239,17 +239,16 @@ export default function DashboardPage() {
       {/* Status Banner */}
       {user && <div className="mb-6"><StatusBanner user={user} /></div>}
 
-      {/* Stats — only for businesses */}
-      {canPost && (
-        <div className="grid grid-cols-3 gap-4 mb-8">
+      {/* Stats — only for businesses with a listing */}
+      {canPost && listings.length > 0 && (
+        <div className="grid grid-cols-2 gap-4 mb-8">
           {[
-            { label: "Total anunțuri", value: listings.length, icon: <Tag className="h-5 w-5 text-primary" />, bg: "bg-accent" },
-            { label: "Active", value: activeCount, icon: <Eye className="h-5 w-5 text-emerald-600" />, bg: "bg-emerald-50" },
-            { label: "Inactive", value: listings.length - activeCount, icon: <EyeOff className="h-5 w-5 text-muted-foreground" />, bg: "bg-secondary" },
+            { label: "Stare anunț", value: activeCount > 0 ? "Activ" : "Inactiv", icon: activeCount > 0 ? <Eye className="h-5 w-5 text-emerald-600" /> : <EyeOff className="h-5 w-5 text-muted-foreground" />, bg: activeCount > 0 ? "bg-emerald-50" : "bg-secondary" },
+            { label: "Vizibilitate", value: activeCount > 0 ? "Vizibil" : "Ascuns", icon: <TrendingUp className="h-5 w-5 text-primary" />, bg: "bg-accent" },
           ].map(stat => (
             <div key={stat.label} className="bg-white rounded-2xl border border-border p-4 shadow-card">
               <div className={`${stat.bg} rounded-xl p-2 w-fit mb-3`}>{stat.icon}</div>
-              <div className="text-2xl font-extrabold text-foreground">{stat.value}</div>
+              <div className="text-xl font-extrabold text-foreground">{stat.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
             </div>
           ))}
@@ -346,24 +345,24 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Listings — only for businesses */}
+      {/* Listing — only for businesses */}
       {canPost && (
         <div>
-          <h2 className="text-lg font-bold mb-4">Anunțurile mele</h2>
+          <h2 className="text-lg font-bold mb-4">Anunțul firmei mele</h2>
           {isLoading ? (
             <div className="space-y-3">
-              {[...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-5 h-20 animate-pulse" />)}
+              {[...Array(1)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border p-5 h-20 animate-pulse" />)}
             </div>
           ) : listings.length === 0 ? (
             <div className="bg-white rounded-2xl border border-border p-12 text-center shadow-card">
               <div className="bg-secondary rounded-full h-14 w-14 flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="h-7 w-7 text-muted-foreground" />
+                <Building2 className="h-7 w-7 text-muted-foreground" />
               </div>
-              <h3 className="font-bold mb-2">Niciun anunț încă</h3>
-              <p className="text-sm text-muted-foreground mb-4">Postează primul tău anunț și ajunge la clienți locali</p>
+              <h3 className="font-bold mb-2">Niciun anunț publicat</h3>
+              <p className="text-sm text-muted-foreground mb-4">Adaugă anunțul firmei tale — descriere, preț, contact. Ai dreptul la un singur anunț.</p>
               <button onClick={() => setShowForm(true)}
                 className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors">
-                <Plus className="h-4 w-4" />Adaugă primul anunț
+                <Plus className="h-4 w-4" />Adaugă anunțul firmei
               </button>
             </div>
           ) : (

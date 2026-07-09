@@ -1,58 +1,53 @@
 # servicii-locale
 
-A Romanian local-services marketplace where users can discover and post local service listings (cleaning, food, repair, transport, etc.), leave reviews, and register as businesses.
+A Romanian local-services marketplace where users can find, list, and review local service providers (hairdressers, handymen, food delivery, transport, etc.).
 
 ## Stack
 
-| Layer    | Technology                                              |
-|----------|---------------------------------------------------------|
-| Frontend | React 18 + Vite + TypeScript + TailwindCSS + Radix UI  |
-| Backend  | Express 5 + TypeScript (tsx watch)                     |
-| Database | PostgreSQL via Drizzle ORM                              |
-| Auth     | JWT in httpOnly cookies (bcryptjs for passwords)       |
-| Monorepo | pnpm workspaces (`apps/api`, `apps/web`, `packages/shared`) |
+- **Monorepo**: pnpm workspaces
+- **Backend**: Express v5 (TypeScript, tsx), runs on port 3001
+- **Frontend**: React 18 + Vite + Tailwind CSS + TanStack Query + Radix UI, runs on port 5000
+- **Database**: PostgreSQL via Drizzle ORM
+- **Shared**: `packages/shared` — Drizzle schema, Zod validators, shared types
 
-## Running the project
+## How to run
 
-Two workflows must be running:
+Two workflows run in parallel (configured in `.replit`):
 
-- **Backend API** — `pnpm --filter api dev` → listens on port 3001
-- **Start application** — `pnpm --filter web dev` → listens on port 5000 (preview pane)
+- **Backend API**: `pnpm --filter api dev` → listens on port 3001
+- **Start application**: `pnpm --filter web dev` → listens on port 5000
 
-## Required secrets
+The Vite dev server proxies `/api` requests to `http://localhost:3001`.
 
-| Key          | Purpose                                      |
-|--------------|----------------------------------------------|
-| `JWT_SECRET` | Signs authentication cookies (any long random string) |
+## Environment variables / secrets
 
-`DATABASE_URL` is managed automatically by Replit's built-in PostgreSQL.
+| Key | Description |
+|-----|-------------|
+| `DATABASE_URL` | Runtime-managed by Replit — do not set manually |
+| `JWT_SECRET` | JWT signing secret (set as a Replit Secret) |
+| `SESSION_SECRET` | Session signing secret (set as a Replit Secret) |
+| `NODE_ENV` | Optional — defaults to development |
+| `ALLOWED_ORIGINS` | Optional — comma-separated extra CORS origins for production |
 
 ## Database
 
-Schema lives in `packages/shared/src/schema.ts` (Drizzle ORM).  
-Push schema changes to the dev database:
+Schema lives in `packages/shared/src/schema.ts` (Drizzle).  
+To push schema changes to the dev database:
 
 ```bash
-pnpm db:push
+pnpm --filter shared db:push
 ```
 
 ## Project structure
 
 ```
 apps/
-  api/       Express API server
-    src/
-      routes/   auth, listings, categories, business, admin, reviews, profile
-      auth.ts   JWT middleware
-      db.ts     Drizzle client
-  web/       React + Vite frontend
-    src/
-      pages/
-      components/
+  api/          Express API — routes, auth, business logic
+  web/          React frontend — pages, components, hooks
 packages/
-  shared/    Drizzle schema + validators shared between api and web
+  shared/       Schema, validators, shared types
 ```
 
 ## User preferences
 
-- Comunicare în limba română
+- Keep the existing monorepo structure and stack — do not restructure or migrate.

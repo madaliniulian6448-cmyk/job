@@ -169,6 +169,14 @@ export default function Navbar() {
           <Link to={user ? "/dashboard" : "/login"} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
             <LayoutDashboard className="h-4 w-4 text-primary" />Dashboard
           </Link>
+          <Link to="/despre" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
+            <Info className="h-4 w-4 text-muted-foreground" />Despre noi
+          </Link>
+          {user?.role === "admin" && (
+            <Link to="/admin" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-orange-600 hover:bg-orange-50" onClick={() => setMobileOpen(false)}>
+              <Shield className="h-4 w-4" />Panou Admin
+            </Link>
+          )}
           {user && (
             <>
               <Link to="/favorite" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
@@ -187,14 +195,6 @@ export default function Navbar() {
               </Link>
             </>
           )}
-          {user?.role === "admin" && (
-            <Link to="/admin" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-orange-600 hover:bg-orange-50" onClick={() => setMobileOpen(false)}>
-              <Shield className="h-4 w-4" />Panou Admin
-            </Link>
-          )}
-          <Link to="/despre" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
-            <Info className="h-4 w-4 text-muted-foreground" />Despre noi
-          </Link>
           <div className="border-t border-border pt-2 mt-1 flex flex-col gap-1">
             {user ? (
               <>

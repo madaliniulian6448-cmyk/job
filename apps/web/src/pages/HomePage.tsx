@@ -491,7 +491,7 @@ function ListingCard({ listing, isFav, onToggleFav }: { listing: Listing; isFav?
 
       {/* Description */}
       {listing.description && (
-        <p className="text-sm text-muted-foreground line-clamp-3 mb-3 leading-relaxed flex-1">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
           {listing.description}
         </p>
       )}

@@ -14,13 +14,16 @@ import profileRoutes from "./routes/profile";
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
-// Allow the Vite dev server and any configured frontend origin.
+// Allow the Vite dev server, the Replit preview domain, and any configured frontend origin.
 // In production set ALLOWED_ORIGINS to the deployed frontend URL.
 const ALLOWED_ORIGINS = new Set(
-  (process.env.ALLOWED_ORIGINS ?? "http://localhost:5000")
-    .split(",")
-    .map((o) => o.trim())
+  [
+    "http://localhost:5000",
+    process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null,
+    ...(process.env.ALLOWED_ORIGINS ?? "").split(","),
+  ]
     .filter(Boolean)
+    .map((o) => (o as string).trim())
 );
 
 app.use(
@@ -28,6 +31,8 @@ app.use(
     origin: (origin, cb) => {
       // Allow same-origin / server-to-server requests (no Origin header)
       if (!origin || ALLOWED_ORIGINS.has(origin)) return cb(null, true);
+      // Allow any *.replit.dev subdomain (Replit preview pane)
+      if (/^https:\/\/[^.]+\.replit\.dev$/.test(origin)) return cb(null, true);
       cb(new Error(`CORS: origin '${origin}' not allowed`));
     },
     credentials: true,

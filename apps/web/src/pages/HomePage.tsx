@@ -10,6 +10,7 @@ import {
   ArrowRight, CheckCircle, Users, Briefcase, Sparkles, Leaf,
   ArrowUpDown
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
 const CITIES = [
   "", "București", "Cluj-Napoca", "Timișoara", "Iași", "Constanța",
@@ -164,14 +165,15 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="hidden sm:block w-px bg-slate-100 self-stretch my-1" />
-                <select
-                  value={city}
-                  onChange={e => setCity(e.target.value)}
-                  className="sm:w-44 px-4 py-3 text-slate-600 rounded-xl text-sm font-medium focus:outline-none bg-transparent appearance-none cursor-pointer"
-                >
-                  <option value="">Toate orașele</option>
-                  {CITIES.filter(c => c).map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <Select value={city || "__all"} onValueChange={v => setCity(v === "__all" ? "" : v)}>
+                  <SelectTrigger className="sm:w-44 px-4 py-3 text-slate-600 rounded-xl text-sm font-medium border-0 shadow-none bg-transparent focus:ring-0 h-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all">Toate orașele</SelectItem>
+                    {CITIES.filter(c => c).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
                 <button className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold text-sm hover:brightness-110 transition-all shadow-lg shadow-primary/40">
                   <Search className="h-4 w-4" />
                   Caută

@@ -9,6 +9,7 @@ import {
   Building2, Star, AlertCircle, CheckCircle, Clock, X,
   Phone, Tag, TrendingUp, Eye, EyeOff, ArrowRight, Lock, Settings
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
 interface Listing {
   id: number;
@@ -315,11 +316,15 @@ export default function DashboardPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-1.5">Oraș *</label>
-                <select required value={form.city} onChange={set("city")}
-                  className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors bg-white">
-                  <option value="">Selectează</option>
-                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <Select value={form.city || "__none"} onValueChange={v => setForm(f => ({ ...f, city: v === "__none" ? "" : v }))}>
+                  <SelectTrigger className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:ring-0 focus:border-primary transition-colors bg-white h-auto">
+                    <SelectValue placeholder="Selectează" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Selectează</SelectItem>
+                    {CITIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex gap-3 pt-2">

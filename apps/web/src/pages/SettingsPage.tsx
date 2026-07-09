@@ -4,6 +4,7 @@ import { apiFetch } from "../lib/api";
 import { toast } from "sonner";
 import { Settings, User, Lock, Save, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
 const CITIES = [
   "București", "Cluj-Napoca", "Timișoara", "Iași", "Constanța",
@@ -137,11 +138,15 @@ export default function SettingsPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-1.5">Oraș</label>
-                <select value={profile.city} onChange={e => setProfile(p => ({ ...p, city: e.target.value }))}
-                  className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors bg-white">
-                  <option value="">Selectează</option>
-                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <Select value={profile.city || "__none"} onValueChange={v => setProfile(p => ({ ...p, city: v === "__none" ? "" : v }))}>
+                  <SelectTrigger className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:ring-0 focus:border-primary transition-colors bg-white h-auto">
+                    <SelectValue placeholder="Selectează" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Selectează</SelectItem>
+                    {CITIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div>

@@ -25,6 +25,7 @@ interface Listing {
   price: string | null;
   phone: string;
   city: string;
+  images: string[];
   createdAt: string;
   owner: {
     id: number;
@@ -448,72 +449,104 @@ export default function HomePage() {
 function ListingCard({ listing, isFav, onToggleFav }: { listing: Listing; isFav?: boolean; onToggleFav?: () => void }) {
   const isBusiness = listing.owner.businessType !== "none";
   const isCompany = listing.owner.businessType === "company";
+  const hasCover = listing.images?.length > 0;
 
   return (
-    <div className="relative group bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 flex flex-col">
+    <div className="relative group bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 flex flex-col overflow-hidden">
       {/* Favorite button */}
       {onToggleFav && (
         <button
           onClick={(e) => { e.preventDefault(); onToggleFav(); }}
-          className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-colors ${isFav ? "text-pink-500 bg-pink-50 hover:bg-pink-100" : "text-muted-foreground bg-white hover:text-pink-500 hover:bg-pink-50 opacity-0 group-hover:opacity-100"}`}
+          className={`absolute z-10 p-1.5 rounded-lg transition-colors ${hasCover ? "top-2 right-2 bg-white/90" : "top-3 right-3 bg-white"} ${isFav ? "text-pink-500 hover:bg-pink-50" : "text-muted-foreground hover:text-pink-500 hover:bg-pink-50 opacity-0 group-hover:opacity-100"}`}
           title={isFav ? "Elimină din favorite" : "Salvează la favorite"}
         >
           <Heart className={`h-4 w-4 transition-all ${isFav ? "fill-pink-500" : ""}`} />
         </button>
       )}
 
-      <Link to={`/listing/${listing.id}`} className="flex flex-col flex-1 p-5">
-      {/* Top badges */}
-      <div className="flex items-center gap-2 mb-3 pr-8">
-        {listing.category && (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-accent px-2.5 py-1 rounded-full">
-            <Tag className="h-3 w-3" />{listing.category.name}
-          </span>
+      <Link to={`/listing/${listing.id}`} className="flex flex-col flex-1">
+        {/* Cover photo */}
+        {hasCover ? (
+          <div className="relative w-full h-40 overflow-hidden">
+            <img
+              src={listing.images[0]}
+              alt={listing.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            {/* Category badge overlay */}
+            {listing.category && (
+              <div className="absolute bottom-2 left-2">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-white/95 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm">
+                  <Tag className="h-3 w-3" />{listing.category.name}
+                </span>
+              </div>
+            )}
+            {isCompany && (
+              <div className="absolute bottom-2 right-2">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50/95 px-2 py-0.5 rounded-full shadow-sm">
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />Firmă
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* No photo — show badges inline */
+          <div className="flex items-center gap-2 px-5 pt-5 pr-10">
+            {listing.category && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-accent px-2.5 py-1 rounded-full">
+                <Tag className="h-3 w-3" />{listing.category.name}
+              </span>
+            )}
+            {isCompany && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />Firmă
+              </span>
+            )}
+          </div>
         )}
-        {isCompany && (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
-            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />Firmă
-          </span>
-        )}
-      </div>
 
-      {/* Title */}
-      <h3 className="font-bold text-foreground text-base mb-1 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-        {listing.title}
-      </h3>
+        <div className={`flex flex-col flex-1 px-5 pb-5 ${hasCover ? "pt-4" : "pt-3"}`}>
+          {/* Title */}
+          <h3 className="font-bold text-foreground text-base mb-1 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+            {listing.title}
+          </h3>
 
-      {/* Business name */}
-      {isBusiness && listing.owner.businessName && (
-        <p className="text-xs font-semibold text-primary/80 mb-2 flex items-center gap-1">
-          <Building2 className="h-3 w-3" />{listing.owner.businessName}
-        </p>
-      )}
+          {/* Posted by */}
+          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+            <Building2 className="h-3 w-3 flex-shrink-0" />
+            {isBusiness && listing.owner.businessName
+              ? listing.owner.businessName
+              : listing.owner.name}
+          </p>
 
-      {/* Description */}
-      {listing.description && (
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
-          {listing.description}
-        </p>
-      )}
+          {/* Description */}
+          {listing.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
+              {listing.description}
+            </p>
+          )}
 
-      <div className="flex-1" />
+          <div className="flex-1" />
 
-      {/* Price */}
-      {listing.price && (
-        <div className="mb-3">
-          <span className="text-lg font-extrabold text-foreground">{listing.price} <span className="text-sm font-normal text-muted-foreground">lei</span></span>
+          {/* Price */}
+          {listing.price && (
+            <div className="mb-3">
+              <span className="text-lg font-extrabold text-foreground">
+                {listing.price} <span className="text-sm font-normal text-muted-foreground">lei</span>
+              </span>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-3 border-t border-border/60">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5" />{listing.city}
+            </div>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+              <Phone className="h-3 w-3" />{listing.phone}
+            </span>
+          </div>
         </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-border/60">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3.5 w-3.5" />{listing.city}
-        </div>
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-          <Phone className="h-3 w-3" />{listing.phone}
-        </span>
-      </div>
       </Link>
     </div>
   );

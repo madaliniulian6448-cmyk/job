@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 type BusinessType = "private" | "company";
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 const CITIES = [
   "București", "Cluj-Napoca", "Timișoara", "Iași", "Constanța",
@@ -119,9 +119,10 @@ export default function BusinessUpgradePage() {
     return true;
   }
 
-  async function handleSubmit() {
+  async function handleRegisterAndPay() {
     setLoading(true);
     try {
+      // 1. Save business + listing
       await apiFetch("/business/register", {
         method: "POST",
         body: JSON.stringify({
@@ -142,8 +143,10 @@ export default function BusinessUpgradePage() {
           },
         }),
       });
+      // 2. Activate subscription for 1 month
+      await apiFetch("/business/pay", { method: "POST" });
       await invalidate();
-      toast.success("Cerere trimisă! Anunțul tău este creat și în așteptarea aprobării.");
+      toast.success("Plată confirmată! Anunțul tău este acum activ pentru 1 lună.");
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err.message);
@@ -153,8 +156,9 @@ export default function BusinessUpgradePage() {
   }
 
   const selectedCategory = categories.find(c => String(c.id) === lst.categoryId);
+  const priceLabel = type === "company" ? "60" : "30";
 
-  const STEPS = ["Tip cont", "Detalii firmă", "Anunțul tău", "Preview"];
+  const STEPS = ["Tip cont", "Detalii firmă", "Anunțul tău", "Preview", "Plată"];
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
@@ -525,19 +529,78 @@ export default function BusinessUpgradePage() {
           </div>
 
           <button
-            onClick={handleSubmit}
+            onClick={() => setStep(5)}
+            className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors shadow-sm flex items-center justify-center gap-2"
+          >
+            Continuă la plată <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* ── STEP 5: Plată ── */}
+      {step === 5 && (
+        <div className="space-y-5">
+          {/* Price summary card */}
+          <div className="bg-white rounded-2xl border border-border shadow-card p-6">
+            <h2 className="font-bold text-lg mb-5">Rezumat comandă</h2>
+            <div className="space-y-3 mb-5">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Abonament {type === "company" ? "Firmă Înregistrată" : "Firmă Privată"}
+                </span>
+                <span className="font-semibold">{priceLabel} lei</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Perioadă</span>
+                <span className="font-semibold">1 lună</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Anunț</span>
+                <span className="font-semibold truncate max-w-[180px]">{lst.title}</span>
+              </div>
+              <div className="border-t border-border/60 pt-3 flex justify-between">
+                <span className="font-bold">Total</span>
+                <span className="font-extrabold text-lg text-primary">{priceLabel} lei</span>
+              </div>
+            </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-800 leading-relaxed">
+              Anunțul devine <strong>vizibil public imediat</strong> după plată și rămâne activ <strong>1 lună</strong>. Poți reînnoi oricând din Dashboard.
+            </div>
+          </div>
+
+          {/* What's included */}
+          <div className="bg-white rounded-2xl border border-border shadow-card p-5">
+            <h3 className="font-semibold text-sm mb-3">Ce primești</h3>
+            <ul className="space-y-2">
+              {[
+                "Anunț vizibil în motorul de căutare",
+                "Poze și descriere completă",
+                "Contact direct cu clienții",
+                "Badge " + (type === "company" ? "Firmă Înregistrată" : "Firmă Privată"),
+                "Reînnoire simplă după expirare",
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <button
+            onClick={handleRegisterAndPay}
             disabled={loading}
-            className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-primary text-white py-4 rounded-xl font-bold text-base hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Se trimite...</>
+              <><div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Se procesează...</>
             ) : (
-              <><CheckCircle className="h-4 w-4" />Trimite cererea și creează anunțul</>
+              <><CheckCircle className="h-5 w-5" />Plătește {priceLabel} lei și activează anunțul</>
             )}
           </button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Poți edita anunțul oricând din Dashboard, chiar și înainte de aprobare.
+            Anunțul se activează imediat. Poți edita detaliile oricând din Dashboard.
           </p>
         </div>
       )}

@@ -105,4 +105,41 @@ router.post("/register", requireAuth, async (req, res) => {
   res.status(201).json({ user: safeUser, listing });
 });
 
+// Self-service payment: activate/renew listing for 1 month.
+// Only allowed for pending or approved accounts — rejected accounts
+// must go through the review process again (POST /request or /register).
+router.post("/pay", requireAuth, async (req, res) => {
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, req.auth!.userId),
+  });
+
+  if (!user || user.businessType === "none") {
+    return res.status(400).json({ error: "Nu ai un cont de firmă înregistrat" });
+  }
+
+  if (user.businessStatus === "rejected") {
+    return res.status(403).json({
+      error: "Contul de firmă a fost respins. Retrimite cererea pentru a putea activa.",
+    });
+  }
+
+  const now = new Date();
+  // If subscription is still active, renew from expiry date; otherwise from now
+  const base =
+    user.paidUntil && new Date(user.paidUntil) > now
+      ? new Date(user.paidUntil)
+      : now;
+  const paidUntil = new Date(base);
+  paidUntil.setMonth(paidUntil.getMonth() + 1);
+
+  const [updated] = await db
+    .update(users)
+    .set({ businessStatus: "approved", paidUntil })
+    .where(eq(users.id, req.auth!.userId))
+    .returning();
+
+  const { passwordHash, ...safe } = updated;
+  res.json({ user: safe });
+});
+
 export default router;

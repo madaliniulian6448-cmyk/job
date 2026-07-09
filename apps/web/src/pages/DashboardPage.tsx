@@ -1,14 +1,14 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
-import { useAuth } from "../lib/auth";
+import { useAuth, useInvalidateAuth } from "../lib/auth";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import {
   Pencil, Trash2, ToggleLeft, ToggleRight, MapPin,
   Building2, Star, AlertCircle, CheckCircle, Clock, X,
   Phone, Tag, Eye, EyeOff, ArrowRight, Lock, Settings,
-  ImagePlus, Briefcase
+  ImagePlus, Briefcase, CreditCard
 } from "lucide-react";
 
 interface Listing {
@@ -37,6 +37,24 @@ const CITIES = [
 ];
 
 function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["user"]> }) {
+  const invalidate = useInvalidateAuth();
+  const qc = useQueryClient();
+  const [paying, setPaying] = useState(false);
+
+  async function handlePay() {
+    setPaying(true);
+    try {
+      await apiFetch("/business/pay", { method: "POST" });
+      await invalidate();
+      qc.invalidateQueries({ queryKey: ["myListings"] });
+      toast.success("Abonament activat! Anunțul tău este acum vizibil.");
+    } catch (err: any) {
+      toast.error(err.message ?? "Eroare la plată");
+    } finally {
+      setPaying(false);
+    }
+  }
+
   if (user.businessType === "none") {
     return (
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -46,29 +64,13 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
         <div className="flex-1">
           <h3 className="font-bold text-blue-900 text-sm">Postarea anunțurilor necesită un cont de firmă</h3>
           <p className="text-xs text-blue-700/80 mt-0.5">
-            Înregistrează-ți firma, creează anunțul și plătești doar după ce ești gata.
+            Înregistrează-ți firma, creează anunțul și activezi imediat cu plata online.
           </p>
         </div>
         <Link to="/business-upgrade"
           className="flex-shrink-0 inline-flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm">
           Înregistrează firma <ArrowRight className="h-3.5 w-3.5" />
         </Link>
-      </div>
-    );
-  }
-
-  if (user.businessStatus === "pending") {
-    return (
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
-        <div className="bg-amber-100 rounded-xl p-2.5 flex-shrink-0">
-          <Clock className="h-5 w-5 text-amber-600" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold text-amber-900 text-sm">Contul de firmă este în verificare</h3>
-          <p className="text-xs text-amber-700/80 mt-0.5">
-            Administratorii verifică datele. Anunțul tău este creat și va deveni vizibil după aprobare și plată.
-          </p>
-        </div>
       </div>
     );
   }
@@ -91,35 +93,83 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
     );
   }
 
+  // pending: submitted but not yet paid
+  if (user.businessStatus === "pending") {
+    const price = user.businessType === "company" ? "60" : "30";
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="bg-amber-100 rounded-xl p-2.5 flex-shrink-0">
+          <CreditCard className="h-5 w-5 text-amber-600" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-semibold text-amber-900 text-sm">Anunț creat — activează-l acum</h3>
+          <p className="text-xs text-amber-700/80 mt-0.5">
+            Plătește abonamentul ({price} lei/lună) și anunțul tău devine vizibil imediat.
+          </p>
+        </div>
+        <button
+          onClick={handlePay}
+          disabled={paying}
+          className="flex-shrink-0 inline-flex items-center gap-1.5 bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-700 transition-colors shadow-sm disabled:opacity-50"
+        >
+          {paying
+            ? <><div className="h-3 w-3 border border-white/30 border-t-white rounded-full animate-spin" />Se procesează...</>
+            : <><CreditCard className="h-3.5 w-3.5" />Plătește {price} lei</>
+          }
+        </button>
+      </div>
+    );
+  }
+
   if (user.businessStatus === "approved") {
-    const paid = user.paidUntil && new Date(user.paidUntil) > new Date();
+    const now = new Date();
+    const paid = user.paidUntil && new Date(user.paidUntil) > now;
+
     if (!paid) {
+      const price = user.businessType === "company" ? "60" : "30";
+      const isExpired = !!user.paidUntil;
       return (
-        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-4">
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="bg-orange-100 rounded-xl p-2.5 flex-shrink-0">
             <AlertCircle className="h-5 w-5 text-orange-600" />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="font-semibold text-orange-900 text-sm">
-              {!user.paidUntil ? "Cont aprobat — în așteptarea plății" : "Abonamentul a expirat"}
+              {isExpired ? "Abonamentul a expirat" : "Cont aprobat — activează anunțul"}
             </h3>
             <p className="text-xs text-orange-700/80 mt-0.5">
-              {!user.paidUntil
-                ? "Contul tău a fost aprobat! Contactează administratorul pentru activarea abonamentului (30 lei)."
-                : "Anunțul tău este ascuns. Contactează administratorul pentru reînnoire."}
+              {isExpired
+                ? "Anunțul tău este ascuns. Reînnoiește abonamentul pentru a-l reactiva."
+                : "Plătește abonamentul și anunțul devine vizibil imediat."}
             </p>
           </div>
+          <button
+            onClick={handlePay}
+            disabled={paying}
+            className="flex-shrink-0 inline-flex items-center gap-1.5 bg-orange-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-orange-700 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {paying
+              ? <><div className="h-3 w-3 border border-white/30 border-t-white rounded-full animate-spin" />Se procesează...</>
+              : <><CreditCard className="h-3.5 w-3.5" />{isExpired ? "Reînnoiește" : "Activează"} {price} lei</>
+            }
+          </button>
         </div>
       );
     }
+
     const paidDate = new Date(user.paidUntil!).toLocaleDateString("ro-RO", { day: "2-digit", month: "long", year: "numeric" });
+    // Check if expiring soon (within 7 days)
+    const daysLeft = Math.ceil((new Date(user.paidUntil!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const expiringSoon = daysLeft <= 7;
+    const price = user.businessType === "company" ? "60" : "30";
+
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-start gap-4">
-        <div className="bg-emerald-100 rounded-xl p-2.5 flex-shrink-0">
-          <CheckCircle className="h-5 w-5 text-emerald-600" />
+      <div className={`border rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${expiringSoon ? "bg-yellow-50 border-yellow-200" : "bg-emerald-50 border-emerald-200"}`}>
+        <div className={`rounded-xl p-2.5 flex-shrink-0 ${expiringSoon ? "bg-yellow-100" : "bg-emerald-100"}`}>
+          <CheckCircle className={`h-5 w-5 ${expiringSoon ? "text-yellow-600" : "text-emerald-600"}`} />
         </div>
-        <div>
-          <h3 className="font-semibold text-emerald-900 text-sm flex items-center gap-2">
+        <div className="flex-1">
+          <h3 className={`font-semibold text-sm flex items-center gap-2 ${expiringSoon ? "text-yellow-900" : "text-emerald-900"}`}>
             Firmă activă
             {user.businessType === "company" && (
               <span className="inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
@@ -127,10 +177,24 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
               </span>
             )}
           </h3>
-          <p className="text-xs text-emerald-700/80 mt-0.5">
-            Abonament activ până pe <strong>{paidDate}</strong>. Anunțul tău este vizibil.
+          <p className={`text-xs mt-0.5 ${expiringSoon ? "text-yellow-700/80" : "text-emerald-700/80"}`}>
+            {expiringSoon
+              ? `Expiră în ${daysLeft} ${daysLeft === 1 ? "zi" : "zile"} (${paidDate}). Reînnoiește acum pentru continuitate.`
+              : `Abonament activ până pe ${paidDate}. Anunțul tău este vizibil.`}
           </p>
         </div>
+        {expiringSoon && (
+          <button
+            onClick={handlePay}
+            disabled={paying}
+            className="flex-shrink-0 inline-flex items-center gap-1.5 bg-yellow-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-700 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {paying
+              ? <><div className="h-3 w-3 border border-white/30 border-t-white rounded-full animate-spin" />...</>
+              : <><CreditCard className="h-3.5 w-3.5" />Reînnoiește {price} lei</>
+            }
+          </button>
+        )}
       </div>
     );
   }
@@ -437,7 +501,7 @@ export default function DashboardPage() {
               {/* Cover photo */}
               {listing.images?.length > 0 && (
                 <div className="relative">
-                  <img src={listing.images[0]} alt="" className="w-full h-48 object-cover" />
+                  <img src={listing.images[0]} alt="" className="w-full h-36 object-cover" />
                   {listing.images.length > 1 && (
                     <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">
                       +{listing.images.length - 1} poze

@@ -35,8 +35,10 @@ app.use(
     origin: (origin, cb) => {
       // Allow same-origin / server-to-server requests (no Origin header)
       if (!origin || ALLOWED_ORIGINS.has(origin)) return cb(null, true);
-      // Allow any *.replit.dev subdomain (Replit preview pane, including multi-label hosts)
-      if (/^https:\/\/.+\.replit\.dev$/.test(origin)) return cb(null, true);
+      // Allow port-specific subdomains of this repl's own dev domain only
+      // (e.g. 5000-<replId>.replit.dev) — not arbitrary *.replit.dev origins.
+      const replDev = process.env.REPLIT_DEV_DOMAIN;
+      if (replDev && (origin === `https://${replDev}` || origin.endsWith(`.${replDev}`))) return cb(null, true);
       cb(new Error(`CORS: origin '${origin}' not allowed`));
     },
     credentials: true,

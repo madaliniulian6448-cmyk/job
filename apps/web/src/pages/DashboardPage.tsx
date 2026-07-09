@@ -499,92 +499,112 @@ export default function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className={`bg-white rounded-2xl border shadow-card overflow-hidden transition-all ${listing.isActive && isActive ? "border-border" : "border-border/50"}`}>
-              {/* Cover photo */}
-              {listing.images?.length > 0 && (
-                <div className="relative">
-                  <img src={listing.images[0]} alt="" className="w-full h-36 object-cover" />
-                  {listing.images.length > 1 && (
-                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">
-                      +{listing.images.length - 1} poze
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="p-5">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h3 className="font-semibold truncate">{listing.title}</h3>
-                      {/* Status badge */}
-                      {!isActive && user?.businessStatus === "pending" && (
-                        <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium flex-shrink-0 flex items-center gap-1">
-                          <Clock className="h-3 w-3" />În verificare
-                        </span>
-                      )}
-                      {!isActive && user?.businessStatus === "approved" && (
-                        <span className="text-xs bg-orange-50 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-medium flex-shrink-0">
-                          Neactivat
-                        </span>
-                      )}
-                      {isActive && listing.isActive && (
-                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">Activ</span>
-                      )}
-                      {isActive && !listing.isActive && (
-                        <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-medium flex-shrink-0">Inactiv</span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{listing.city}</span>
-                      <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{listing.phone}</span>
-                      {listing.price && <span className="font-semibold text-foreground">{listing.price} lei</span>}
-                    </div>
-                    <div className="flex gap-4 mt-2 text-xs">
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <Eye className="h-3 w-3" />
-                        <span className="font-semibold text-foreground">{listing.viewCount ?? 0}</span> vizualizări
-                      </span>
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <Phone className="h-3 w-3" />
-                        <span className="font-semibold text-foreground">{listing.contactClickCount ?? 0}</span> click-uri contact
-                      </span>
-                    </div>
-                    {listing.description && (
-                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{listing.description}</p>
+            <div className={`bg-white rounded-2xl border shadow-card overflow-hidden transition-all max-w-2xl ${listing.isActive && isActive ? "border-border" : "border-border/50"}`}>
+              {/* Horizontal layout: thumbnail left, content right */}
+              <div className="flex gap-0">
+                {/* Thumbnail */}
+                {listing.images?.length > 0 ? (
+                  <div className="relative flex-shrink-0 w-44 sm:w-56">
+                    <img
+                      src={listing.images[0]}
+                      alt=""
+                      className="w-full h-full object-cover min-h-[160px]"
+                    />
+                    {listing.images.length > 1 && (
+                      <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                        +{listing.images.length - 1} poze
+                      </div>
                     )}
                   </div>
-
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Link to={`/listing/${listing.id}`}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent transition-colors">
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                    {isActive && (
-                      <button onClick={() => toggleMutation.mutate(listing.id)} disabled={toggleMutation.isPending}
-                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                        {listing.isActive ? <ToggleRight className="h-5 w-5 text-primary" /> : <ToggleLeft className="h-5 w-5" />}
-                      </button>
-                    )}
-                    <button onClick={() => startEdit(listing)}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => { if (confirm("Ștergi anunțul firmei?")) deleteMutation.mutate(listing.id); }}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Photo strip */}
-                {listing.images?.length > 1 && (
-                  <div className="grid grid-cols-4 gap-1.5 mt-4">
-                    {listing.images.slice(1, 5).map((url, i) => (
-                      <img key={i} src={url} alt="" className="w-full h-14 object-cover rounded-lg" />
-                    ))}
+                ) : (
+                  <div className="flex-shrink-0 w-16 sm:w-20 bg-gradient-to-b from-primary/10 to-accent flex items-center justify-center">
+                    <Building2 className="h-7 w-7 text-primary/30" />
                   </div>
                 )}
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 p-4 flex flex-col gap-2">
+                  {/* Title + status + actions row */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-foreground text-base truncate leading-snug">
+                        {listing.title}
+                      </h3>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {!isActive && user?.businessStatus === "pending" && (
+                          <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">
+                            <Clock className="h-3 w-3" />În verificare
+                          </span>
+                        )}
+                        {!isActive && user?.businessStatus === "approved" && (
+                          <span className="text-xs bg-orange-50 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-medium">Neactivat</span>
+                        )}
+                        {isActive && listing.isActive && (
+                          <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">● Activ</span>
+                        )}
+                        {isActive && !listing.isActive && (
+                          <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-medium">Inactiv</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action icons */}
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <Link to={`/listing/${listing.id}`}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent transition-colors" title="Vizualizează">
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                      {isActive && (
+                        <button onClick={() => toggleMutation.mutate(listing.id)} disabled={toggleMutation.isPending}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title={listing.isActive ? "Dezactivează" : "Activează"}>
+                          {listing.isActive ? <ToggleRight className="h-4 w-4 text-primary" /> : <ToggleLeft className="h-4 w-4" />}
+                        </button>
+                      )}
+                      <button onClick={() => startEdit(listing)}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Editează">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => { if (confirm("Ștergi anunțul firmei?")) deleteMutation.mutate(listing.id); }}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors" title="Șterge">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Meta row */}
+                  <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{listing.city}</span>
+                    <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{listing.phone}</span>
+                    {listing.price && (
+                      <span className="font-bold text-foreground">{listing.price} lei</span>
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  {listing.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      {listing.description}
+                    </p>
+                  )}
+
+                  {/* Stats row */}
+                  <div className="flex gap-4 pt-2 mt-auto border-t border-border/50">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <div className="p-1 rounded-md bg-blue-50">
+                        <Eye className="h-3 w-3 text-blue-500" />
+                      </div>
+                      <span className="font-bold text-foreground">{listing.viewCount ?? 0}</span>
+                      <span className="text-muted-foreground">vizualizări</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <div className="p-1 rounded-md bg-emerald-50">
+                        <Phone className="h-3 w-3 text-emerald-500" />
+                      </div>
+                      <span className="font-bold text-foreground">{listing.contactClickCount ?? 0}</span>
+                      <span className="text-muted-foreground">contacte</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

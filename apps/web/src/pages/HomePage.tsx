@@ -289,7 +289,7 @@ export default function HomePage() {
         {/* Stats bar */}
         <div className="relative border-t border-slate-200 bg-white/60">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="flex justify-between items-center">
+            <div className="grid grid-cols-3 gap-4 sm:flex sm:justify-between sm:items-center">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-blue-100 text-primary"><Users className="h-5 w-5" /></div>
                 <div>

@@ -369,8 +369,8 @@ export default function ListingDetailPage() {
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1 space-y-4">
+        {/* Sidebar — appears first on mobile, right column on desktop */}
+        <div className="lg:col-span-1 space-y-4 order-first lg:order-none">
           {/* Contact card */}
           <div className="bg-white rounded-2xl border border-border shadow-card p-5">
             <h3 className="font-bold text-sm mb-4">Contact</h3>

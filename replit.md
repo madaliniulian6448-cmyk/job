@@ -55,4 +55,4 @@ packages/
 
 ## User preferences
 
-<!-- Add user preferences here as they are expressed -->
+- Comunicare în limba română

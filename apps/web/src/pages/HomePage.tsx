@@ -135,7 +135,7 @@ export default function HomePage() {
         {/* Stats */}
         <div className="relative border-t border-white/10 bg-white/5 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="flex justify-between items-center">
               {[
                 { icon: <Users className="h-4 w-4" />, val: "500+", label: "Utilizatori activi" },
                 { icon: <Briefcase className="h-4 w-4" />, val: "200+", label: "Firme locale" },

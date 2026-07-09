@@ -88,67 +88,198 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary/95 to-blue-900 text-white">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptNiA2djZoNnYtNmgtNnptLTEyIDBoNnY2aC02di02em0xMiAwaDZ2NmgtNnYtNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium text-blue-100 mb-6 border border-white/20">
-              <CheckCircle className="h-4 w-4 text-emerald-400" />
-              Platforma #1 pentru servicii locale în România
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-5 text-balance leading-tight">
-              Găsește servicii locale<br />
-              <span className="text-blue-300">din orașul tău</span>
-            </h1>
-            <p className="text-lg md:text-xl text-blue-100/80 mb-10 max-w-xl leading-relaxed">
-              Mâncare gătită acasă, frizeri, meșteri, transport — totul local, totul verificat.
-            </p>
+      <section className="relative overflow-hidden bg-[#060d1f] text-white">
+        {/* Ambient glow orbs */}
+        <div className="absolute -top-48 -left-48 w-[600px] h-[600px] rounded-full bg-blue-600 blur-[140px] opacity-25 pointer-events-none" />
+        <div className="absolute -top-20 right-0 w-[450px] h-[450px] rounded-full bg-indigo-600 blur-[120px] opacity-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-[500px] h-[200px] rounded-full bg-blue-500 blur-[80px] opacity-10 pointer-events-none" />
+        {/* Subtle dot grid */}
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
 
-            {/* Search bar */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-2 flex flex-col sm:flex-row gap-2 border border-white/20 shadow-2xl">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50" />
-                <input
-                  type="text"
-                  placeholder="Caută servicii, firme..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-white/10 text-white placeholder-white/50 rounded-xl border border-white/10 focus:outline-none focus:border-white/40 text-sm font-medium"
-                />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-0 md:pt-28">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center pb-16 md:pb-24">
+
+            {/* Left column */}
+            <div>
+              <div className="inline-flex items-center gap-2.5 bg-white/8 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium text-blue-100 mb-8 border border-white/10 shadow-lg">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" style={{ boxShadow: "0 0 6px #34d399" }} />
+                Platforma #1 pentru servicii locale în România
               </div>
-              <select
-                value={city}
-                onChange={e => setCity(e.target.value)}
-                className="sm:w-48 px-4 py-3 bg-white/10 text-white rounded-xl border border-white/10 focus:outline-none focus:border-white/40 text-sm font-medium appearance-none"
-              >
-                <option value="" className="text-foreground">Toate orașele</option>
-                {CITIES.filter(c => c).map(c => <option key={c} value={c} className="text-foreground">{c}</option>)}
-              </select>
-              <button className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-primary rounded-xl font-semibold text-sm hover:bg-blue-50 transition-colors shadow-sm">
-                <Search className="h-4 w-4" />
-                Caută
-              </button>
+
+              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 leading-[1.08]">
+                Găsește servicii<br />
+                <span style={{ background: "linear-gradient(90deg, #93c5fd, #67e8f9, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  locale acum
+                </span>
+              </h1>
+
+              <p className="text-lg text-white/55 mb-10 max-w-md leading-relaxed">
+                Mâncare gătită acasă, frizeri, meșteri, transport —<br className="hidden sm:block" /> totul local, totul verificat.
+              </p>
+
+              {/* White search card */}
+              <div className="bg-white rounded-2xl p-1.5 flex flex-col sm:flex-row gap-1 shadow-[0_8px_40px_rgba(59,130,246,0.35)]">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Caută servicii, firme..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 text-slate-700 placeholder-slate-400 rounded-xl text-sm font-medium focus:outline-none bg-transparent"
+                  />
+                </div>
+                <div className="hidden sm:block w-px bg-slate-100 self-stretch my-1" />
+                <select
+                  value={city}
+                  onChange={e => setCity(e.target.value)}
+                  className="sm:w-44 px-4 py-3 text-slate-600 rounded-xl text-sm font-medium focus:outline-none bg-transparent appearance-none cursor-pointer"
+                >
+                  <option value="">Toate orașele</option>
+                  {CITIES.filter(c => c).map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <button className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold text-sm hover:brightness-110 transition-all shadow-lg shadow-primary/40">
+                  <Search className="h-4 w-4" />
+                  Caută
+                </button>
+              </div>
+
+              {/* Quick tags */}
+              <div className="flex flex-wrap gap-2 mt-5">
+                {["Frizerie", "Meșteri", "Transport", "Mâncare", "Curățenie"].map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => setSearch(tag)}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-white/7 border border-white/10 text-white/70 hover:bg-white/14 hover:text-white transition-colors"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right column — decorative service cards (desktop only) */}
+            <div className="hidden lg:block relative h-[400px]">
+              {/* Card 1 */}
+              <div className="absolute top-6 left-10 w-56 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
+                style={{ transform: "rotate(-3deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-300 shrink-0">
+                    <Utensils className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">Mâncare acasă</div>
+                    <div className="text-xs text-white/40">Andreea C. · București</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                    <span className="text-xs text-white/40 ml-1">5.0</span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400">50 RON</span>
+                </div>
+              </div>
+
+              {/* Card 2 */}
+              <div className="absolute top-2 right-6 w-52 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
+                style={{ transform: "rotate(2.5deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
+                    <Scissors className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">Frizerie Pro</div>
+                    <div className="text-xs text-white/40">Salon Elite · Cluj</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                    <Star className="h-3 w-3 text-white/20" />
+                    <span className="text-xs text-white/40 ml-1">4.8</span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400">35 RON</span>
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div className="absolute bottom-16 left-4 w-52 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
+                style={{ transform: "rotate(1.5deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500/20 flex items-center justify-center text-sky-300 shrink-0">
+                    <Wrench className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">Reparații rapide</div>
+                    <div className="text-xs text-white/40">Mihai R. · Timișoara</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                    <span className="text-xs text-white/40 ml-1">4.9</span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400">80 RON</span>
+                </div>
+              </div>
+
+              {/* Card 4 */}
+              <div className="absolute bottom-8 right-4 w-48 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
+                style={{ transform: "rotate(-2deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center text-green-300 shrink-0">
+                    <Truck className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">Transport</div>
+                    <div className="text-xs text-white/40">Cluj Express</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                    <Star className="h-3 w-3 text-white/20" />
+                    <span className="text-xs text-white/40 ml-1">4.7</span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400">120 RON</span>
+                </div>
+              </div>
+
+              {/* Centre glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-blue-500 blur-3xl opacity-20 pointer-events-none" />
             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="relative border-t border-white/10 bg-white/5 backdrop-blur-sm">
+        {/* Stats bar */}
+        <div className="relative border-t border-white/8" style={{ background: "rgba(255,255,255,0.03)" }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
             <div className="flex justify-between items-center">
-              {[
-                { icon: <Users className="h-4 w-4" />, val: "500+", label: "Utilizatori activi" },
-                { icon: <Briefcase className="h-4 w-4" />, val: "200+", label: "Firme locale" },
-                { icon: <MapPin className="h-4 w-4" />, val: "20+", label: "Orașe acoperite" },
-              ].map(stat => (
-                <div key={stat.label} className="flex items-center gap-2.5">
-                  <div className="text-blue-300">{stat.icon}</div>
-                  <div>
-                    <div className="text-base font-bold text-white">{stat.val}</div>
-                    <div className="text-xs text-blue-200/70">{stat.label}</div>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-blue-500/15 text-blue-400"><Users className="h-5 w-5" /></div>
+                <div>
+                  <div className="text-lg font-extrabold text-white tracking-tight">500+</div>
+                  <div className="text-xs text-white/40">Utilizatori activi</div>
                 </div>
-              ))}
+              </div>
+              <div className="w-px h-10 bg-white/8 hidden sm:block" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400"><Briefcase className="h-5 w-5" /></div>
+                <div>
+                  <div className="text-lg font-extrabold text-white tracking-tight">200+</div>
+                  <div className="text-xs text-white/40">Firme locale</div>
+                </div>
+              </div>
+              <div className="w-px h-10 bg-white/8 hidden sm:block" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400"><MapPin className="h-5 w-5" /></div>
+                <div>
+                  <div className="text-lg font-extrabold text-white tracking-tight">20+</div>
+                  <div className="text-xs text-white/40">Orașe acoperite</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

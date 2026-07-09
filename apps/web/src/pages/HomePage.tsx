@@ -88,11 +88,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#060d1f] text-white">
-        {/* Ambient glow orbs */}
-        <div className="absolute -top-48 -left-48 w-[600px] h-[600px] rounded-full bg-blue-600 blur-[140px] opacity-25 pointer-events-none" />
-        <div className="absolute -top-20 right-0 w-[450px] h-[450px] rounded-full bg-indigo-600 blur-[120px] opacity-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-[500px] h-[200px] rounded-full bg-blue-500 blur-[80px] opacity-10 pointer-events-none" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary/95 to-blue-900 text-white">
         {/* Subtle dot grid */}
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "32px 32px" }} />

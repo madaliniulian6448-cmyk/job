@@ -98,7 +98,7 @@ export default function HomePage() {
 
             {/* Left column */}
             <div>
-              <div className="inline-flex items-center gap-2.5 bg-white/8 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium text-blue-100 mb-8 border border-white/10 shadow-lg">
+              <div className="inline-flex items-center gap-2.5 bg-white/15 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium text-white mb-8 border border-white/25 shadow-lg">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" style={{ boxShadow: "0 0 6px #34d399" }} />
                 Platforma #1 pentru servicii locale în România
               </div>
@@ -108,7 +108,7 @@ export default function HomePage() {
                 <span className="text-blue-300">locale acum</span>
               </h1>
 
-              <p className="text-lg text-white/55 mb-10 max-w-md leading-relaxed">
+              <p className="text-lg text-white/80 mb-10 max-w-md leading-relaxed">
                 Mâncare gătită acasă, frizeri, meșteri, transport —<br className="hidden sm:block" /> totul local, totul verificat.
               </p>
 
@@ -145,7 +145,7 @@ export default function HomePage() {
                   <button
                     key={tag}
                     onClick={() => setSearch(tag)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-white/7 border border-white/10 text-white/70 hover:bg-white/14 hover:text-white transition-colors"
+                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-colors"
                   >
                     {tag}
                   </button>
@@ -156,86 +156,86 @@ export default function HomePage() {
             {/* Right column — decorative service cards (desktop only) */}
             <div className="hidden lg:block relative h-[400px]">
               {/* Card 1 */}
-              <div className="absolute top-6 left-10 w-56 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
-                style={{ transform: "rotate(-3deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+              <div className="absolute top-6 left-10 w-56 rounded-2xl p-4"
+                style={{ transform: "rotate(-3deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/30 flex items-center justify-center text-orange-300 shrink-0">
                     <Utensils className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-white truncate">Mâncare acasă</div>
-                    <div className="text-xs text-white/40">Andreea C. · București</div>
+                    <div className="text-xs text-blue-200/70">Andreea C. · București</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <span className="text-xs text-white/40 ml-1">5.0</span>
+                    <span className="text-xs text-blue-200/70 ml-1">5.0</span>
                   </div>
                   <span className="text-xs font-bold text-emerald-400">50 RON</span>
                 </div>
               </div>
 
               {/* Card 2 */}
-              <div className="absolute top-2 right-6 w-52 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
-                style={{ transform: "rotate(2.5deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+              <div className="absolute top-2 right-6 w-52 rounded-2xl p-4"
+                style={{ transform: "rotate(2.5deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/30 flex items-center justify-center text-purple-300 shrink-0">
                     <Scissors className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-white truncate">Frizerie Pro</div>
-                    <div className="text-xs text-white/40">Salon Elite · Cluj</div>
+                    <div className="text-xs text-blue-200/70">Salon Elite · Cluj</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <Star className="h-3 w-3 text-white/20" />
-                    <span className="text-xs text-white/40 ml-1">4.8</span>
+                    <Star className="h-3 w-3 text-white/30" />
+                    <span className="text-xs text-blue-200/70 ml-1">4.8</span>
                   </div>
                   <span className="text-xs font-bold text-emerald-400">35 RON</span>
                 </div>
               </div>
 
               {/* Card 3 */}
-              <div className="absolute bottom-16 left-4 w-52 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
-                style={{ transform: "rotate(1.5deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+              <div className="absolute bottom-16 left-4 w-52 rounded-2xl p-4"
+                style={{ transform: "rotate(1.5deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-500/20 flex items-center justify-center text-sky-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500/30 flex items-center justify-center text-sky-300 shrink-0">
                     <Wrench className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-white truncate">Reparații rapide</div>
-                    <div className="text-xs text-white/40">Mihai R. · Timișoara</div>
+                    <div className="text-xs text-blue-200/70">Mihai R. · Timișoara</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4,5].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <span className="text-xs text-white/40 ml-1">4.9</span>
+                    <span className="text-xs text-blue-200/70 ml-1">4.9</span>
                   </div>
                   <span className="text-xs font-bold text-emerald-400">80 RON</span>
                 </div>
               </div>
 
               {/* Card 4 */}
-              <div className="absolute bottom-8 right-4 w-48 bg-white/8 backdrop-blur-xl border border-white/12 rounded-2xl p-4 shadow-2xl"
-                style={{ transform: "rotate(-2deg)", boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
+              <div className="absolute bottom-8 right-4 w-48 rounded-2xl p-4"
+                style={{ transform: "rotate(-2deg)", background: "rgba(15,23,60,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center text-green-300 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-green-500/30 flex items-center justify-center text-green-300 shrink-0">
                     <Truck className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-white truncate">Transport</div>
-                    <div className="text-xs text-white/40">Cluj Express</div>
+                    <div className="text-xs text-blue-200/70">Cluj Express</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-0.5">
                     {[1,2,3,4].map(i => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
-                    <Star className="h-3 w-3 text-white/20" />
-                    <span className="text-xs text-white/40 ml-1">4.7</span>
+                    <Star className="h-3 w-3 text-white/30" />
+                    <span className="text-xs text-blue-200/70 ml-1">4.7</span>
                   </div>
                   <span className="text-xs font-bold text-emerald-400">120 RON</span>
                 </div>
@@ -248,30 +248,30 @@ export default function HomePage() {
         </div>
 
         {/* Stats bar */}
-        <div className="relative border-t border-white/8" style={{ background: "rgba(255,255,255,0.03)" }}>
+        <div className="relative border-t border-white/20" style={{ background: "rgba(0,0,0,0.2)" }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-blue-500/15 text-blue-400"><Users className="h-5 w-5" /></div>
+                <div className="p-2 rounded-xl bg-blue-500/25 text-blue-300"><Users className="h-5 w-5" /></div>
                 <div>
                   <div className="text-lg font-extrabold text-white tracking-tight">500+</div>
-                  <div className="text-xs text-white/40">Utilizatori activi</div>
+                  <div className="text-xs text-blue-200/70">Utilizatori activi</div>
                 </div>
               </div>
-              <div className="w-px h-10 bg-white/8 hidden sm:block" />
+              <div className="w-px h-10 bg-white/20 hidden sm:block" />
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400"><Briefcase className="h-5 w-5" /></div>
+                <div className="p-2 rounded-xl bg-purple-500/25 text-purple-300"><Briefcase className="h-5 w-5" /></div>
                 <div>
                   <div className="text-lg font-extrabold text-white tracking-tight">200+</div>
-                  <div className="text-xs text-white/40">Firme locale</div>
+                  <div className="text-xs text-blue-200/70">Firme locale</div>
                 </div>
               </div>
-              <div className="w-px h-10 bg-white/8 hidden sm:block" />
+              <div className="w-px h-10 bg-white/20 hidden sm:block" />
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400"><MapPin className="h-5 w-5" /></div>
+                <div className="p-2 rounded-xl bg-emerald-500/25 text-emerald-300"><MapPin className="h-5 w-5" /></div>
                 <div>
                   <div className="text-lg font-extrabold text-white tracking-tight">20+</div>
-                  <div className="text-xs text-white/40">Orașe acoperite</div>
+                  <div className="text-xs text-blue-200/70">Orașe acoperite</div>
                 </div>
               </div>
             </div>

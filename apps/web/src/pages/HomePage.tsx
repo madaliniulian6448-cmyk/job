@@ -109,9 +109,7 @@ export default function HomePage() {
 
               <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 leading-[1.08]">
                 Găsește servicii<br />
-                <span style={{ background: "linear-gradient(90deg, #93c5fd, #67e8f9, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  locale acum
-                </span>
+                <span className="text-blue-300">locale acum</span>
               </h1>
 
               <p className="text-lg text-white/55 mb-10 max-w-md leading-relaxed">

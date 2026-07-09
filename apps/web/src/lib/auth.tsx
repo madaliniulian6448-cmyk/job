@@ -42,6 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
     },
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   return (

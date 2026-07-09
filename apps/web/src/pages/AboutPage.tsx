@@ -5,16 +5,16 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 via-primary/95 to-blue-900 text-white py-20">
+      <div className="bg-gradient-to-br from-sky-50 via-white to-blue-50 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-4 py-2 text-sm font-medium mb-6 border border-white/25">
-            <Heart className="h-4 w-4 text-pink-300" />
+          <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 text-sm font-medium mb-6 border border-slate-200 text-slate-700 shadow-sm">
+            <Heart className="h-4 w-4 text-pink-500" />
             Construit pentru comunitate
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight">
-            Despre <span className="text-blue-300">ServiciiLocale</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight text-slate-900">
+            Despre <span className="text-primary">ServiciiLocale</span>
           </h1>
-          <p className="text-lg text-blue-100/80 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
             Platforma care conectează furnizorii de servicii locale cu clienții din același oraș.
             Simplu, rapid și de încredere.
           </p>

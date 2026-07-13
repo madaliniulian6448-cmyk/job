@@ -43,6 +43,8 @@ interface Review {
   id: number;
   rating: number;
   comment: string | null;
+  reply: string | null;
+  repliedAt: string | null;
   createdAt: string;
   userId: number;
   author: { id: number; name: string };
@@ -103,6 +105,8 @@ export default function ListingDetailPage() {
   const [editComment, setEditComment] = useState("");
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState("");
+  const [replyingId, setReplyingId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
 
   const { data: listingData, isLoading: loadingListing } = useQuery({
     queryKey: ["listing", id],
@@ -165,6 +169,29 @@ export default function ListingDetailPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reviews", id] });
       toast.success("Recenzie ștearsă");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const submitReply = useMutation({
+    mutationFn: (reviewId: number) => apiFetch(`/reviews/${reviewId}/reply`, {
+      method: "PUT",
+      body: JSON.stringify({ reply: replyText.trim() }),
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["reviews", id] });
+      toast.success("Răspuns publicat!");
+      setReplyingId(null);
+      setReplyText("");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const deleteReply = useMutation({
+    mutationFn: (reviewId: number) => apiFetch(`/reviews/${reviewId}/reply`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["reviews", id] });
+      toast.success("Răspuns șters");
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -444,6 +471,71 @@ export default function ListingDetailPage() {
                       ) : r.comment ? (
                         <p className="mt-2 pl-10 text-sm text-muted-foreground leading-relaxed">{r.comment}</p>
                       ) : null}
+
+                      {/* Business owner reply */}
+                      {r.reply && (
+                        <div className="mt-3 ml-10 p-3 bg-secondary/60 rounded-xl border border-border/60">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                              <Building2 className="h-3 w-3 text-primary" />Răspunsul prestatorului
+                            </span>
+                            {isOwner && (
+                              <div className="flex gap-1">
+                                <button onClick={() => { setReplyingId(r.id); setReplyText(r.reply || ""); }}
+                                  className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-white transition-colors">
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                <button onClick={() => { if (confirm("Ștergi răspunsul?")) deleteReply.mutate(r.id); }}
+                                  className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-white transition-colors">
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          {replyingId === r.id ? (
+                            <div className="space-y-2">
+                              <textarea value={replyText} onChange={e => setReplyText(e.target.value)} rows={2}
+                                className="w-full border-2 border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary resize-none bg-white" />
+                              <div className="flex gap-2">
+                                <button onClick={() => submitReply.mutate(r.id)} disabled={submitReply.isPending || !replyText.trim()}
+                                  className="text-xs font-semibold bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary/90 disabled:opacity-50">
+                                  Salvează
+                                </button>
+                                <button onClick={() => { setReplyingId(null); setReplyText(""); }}
+                                  className="text-xs font-semibold border border-border px-3 py-1.5 rounded-lg hover:bg-white">
+                                  Anulează
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground leading-relaxed">{r.reply}</p>
+                          )}
+                        </div>
+                      )}
+                      {isOwner && !r.reply && (
+                        replyingId === r.id ? (
+                          <div className="mt-3 ml-10 space-y-2">
+                            <textarea value={replyText} onChange={e => setReplyText(e.target.value)} rows={2}
+                              placeholder="Scrie un răspuns public la această recenzie..."
+                              className="w-full border-2 border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary resize-none" />
+                            <div className="flex gap-2">
+                              <button onClick={() => submitReply.mutate(r.id)} disabled={submitReply.isPending || !replyText.trim()}
+                                className="text-xs font-semibold bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary/90 disabled:opacity-50">
+                                Publică răspunsul
+                              </button>
+                              <button onClick={() => { setReplyingId(null); setReplyText(""); }}
+                                className="text-xs font-semibold border border-border px-3 py-1.5 rounded-lg hover:bg-secondary">
+                                Anulează
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button onClick={() => { setReplyingId(r.id); setReplyText(""); }}
+                            className="mt-2 ml-10 text-xs font-semibold text-primary hover:underline">
+                            Răspunde la recenzie
+                          </button>
+                        )
+                      )}
                     </div>
                   );
                 })}

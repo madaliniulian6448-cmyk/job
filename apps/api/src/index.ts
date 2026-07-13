@@ -3,6 +3,9 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
+import { eq, and } from "drizzle-orm";
+import { db } from "./db";
+import { listings, users, categories } from "shared/src/schema";
 
 import authRoutes from "./routes/auth";
 import listingsRoutes from "./routes/listings";
@@ -60,6 +63,51 @@ app.use("/api/favorites", favoritesRoutes);
 app.use("/api/notifications", notificationsRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+// ── SEO: sitemap.xml & robots.txt ───────────────────────────────────────────
+// Served at the root so they resolve correctly if this server is the origin
+// that clients/crawlers hit directly (e.g. custom domain pointed at the API,
+// or a reverse proxy that forwards /sitemap.xml and /robots.txt here).
+function siteOrigin(req: express.Request): string {
+  if (process.env.REPLIT_DEV_DOMAIN) return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  return `${req.protocol}://${req.get("host")}`;
+}
+
+app.get("/sitemap.xml", async (req, res) => {
+  const origin = siteOrigin(req);
+  const now = new Date();
+
+  const cats = await db.select().from(categories);
+  const activeListings = await db
+    .select({ id: listings.id, createdAt: listings.createdAt })
+    .from(listings)
+    .innerJoin(users, eq(listings.userId, users.id))
+    .where(and(eq(listings.isActive, true), eq(users.businessStatus, "approved")));
+
+  const staticUrls = ["/", "/despre", "/termeni", "/confidentialitate"];
+
+  const urls = [
+    ...staticUrls.map((u) => `<url><loc>${origin}${u}</loc></url>`),
+    ...cats.map((c) => `<url><loc>${origin}/${c.slug}</loc></url>`),
+    ...activeListings.map(
+      (l) =>
+        `<url><loc>${origin}/listing/${l.id}</loc><lastmod>${new Date(l.createdAt).toISOString()}</lastmod></url>`
+    ),
+  ];
+
+  res.set("Content-Type", "application/xml");
+  res.send(
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join(
+      "\n"
+    )}\n</urlset>`
+  );
+});
+
+app.get("/robots.txt", (req, res) => {
+  const origin = siteOrigin(req);
+  res.set("Content-Type", "text/plain");
+  res.send(`User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`);
+});
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);

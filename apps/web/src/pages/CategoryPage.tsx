@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
@@ -12,8 +12,16 @@ import {
   ChevronRight,
   Zap,
   BadgeCheck,
+  Star,
+  SlidersHorizontal,
+  Map as MapIcon,
+  List as ListIcon,
+  ArrowUpDown,
 } from "lucide-react";
 import NotFoundPage from "./NotFoundPage";
+import ListingsMap from "../components/ListingsMap";
+import { Helmet } from "react-helmet-async";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
 interface Category {
   id: number;
@@ -31,6 +39,8 @@ interface Listing {
   images: string[];
   isPromoted: boolean;
   promotedUntil: string | null;
+  ratingAvg: string | null;
+  reviewCount: number;
   owner: {
     id: number;
     name: string;
@@ -90,6 +100,12 @@ export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minRating, setMinRating] = useState("");
+  const [sort, setSort] = useState("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
 
   const { data: catData, isLoading: loadingCats } = useQuery({
     queryKey: ["categories"],
@@ -100,11 +116,15 @@ export default function CategoryPage() {
   const { category, city } = parseSlug(slug ?? "", allCategories);
 
   const { data: listingsData, isLoading } = useQuery({
-    queryKey: ["listings-cat", category?.id, city],
+    queryKey: ["listings-cat", category?.id, city, minPrice, maxPrice, minRating, sort],
     queryFn: () => {
       const params = new URLSearchParams();
       if (category) params.set("categoryId", String(category.id));
       if (city) params.set("city", city);
+      if (minPrice) params.set("minPrice", minPrice);
+      if (maxPrice) params.set("maxPrice", maxPrice);
+      if (minRating) params.set("minRating", minRating);
+      if (sort) params.set("sort", sort);
       return apiFetch(`/listings?${params}`);
     },
     enabled: !!category,

@@ -8,10 +8,12 @@ import {
   MapPin, Phone, Tag, Search, Building2, Star,
   Utensils, Scissors, Wrench, Truck, Heart, BookOpen,
   ArrowRight, CheckCircle, Users, Briefcase, Sparkles, Leaf,
-  ArrowUpDown, Zap, BadgeCheck,
+  ArrowUpDown, Zap, BadgeCheck, SlidersHorizontal, Map as MapIcon, List as ListIcon,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { cityToSlug } from "./CategoryPage";
+import ListingsMap from "../components/ListingsMap";
+import { Helmet } from "react-helmet-async";
 
 const CITIES = [
   "", "București", "Cluj-Napoca", "Timișoara", "Iași", "Constanța",
@@ -30,6 +32,8 @@ interface Listing {
   createdAt: string;
   isPromoted: boolean;
   promotedUntil: string | null;
+  ratingAvg: string | null;
+  reviewCount: number;
   owner: {
     id: number;
     name: string;
@@ -68,17 +72,26 @@ export default function HomePage() {
   const [categoryId, setCategoryId] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minRating, setMinRating] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
   const navigate = useNavigate();
 
   const { user } = useAuth();
   const qc = useQueryClient();
 
   const { data: listingsData, isLoading } = useQuery({
-    queryKey: ["listings", city, categoryId],
+    queryKey: ["listings", city, categoryId, minPrice, maxPrice, minRating, sort],
     queryFn: () => {
       const params = new URLSearchParams();
       if (city) params.set("city", city);
       if (categoryId) params.set("categoryId", categoryId);
+      if (minPrice) params.set("minPrice", minPrice);
+      if (maxPrice) params.set("maxPrice", maxPrice);
+      if (minRating) params.set("minRating", minRating);
+      if (sort) params.set("sort", sort);
       return apiFetch(`/listings?${params}`);
     },
   });
@@ -124,20 +137,9 @@ export default function HomePage() {
       )
     : listings;
 
-  const now2 = new Date();
-  function isActivePromo(l: Listing) {
-    return l.isPromoted && l.promotedUntil && new Date(l.promotedUntil) > now2;
-  }
-
-  const filtered = [...textFiltered].sort((a, b) => {
-    // Promoted listings always come first, regardless of secondary sort
-    const aP = isActivePromo(a) ? 1 : 0;
-    const bP = isActivePromo(b) ? 1 : 0;
-    if (bP !== aP) return bP - aP;
-    if (sort === "price_asc") return (parseFloat(a.price ?? "999999")) - (parseFloat(b.price ?? "999999"));
-    if (sort === "price_desc") return (parseFloat(b.price ?? "0")) - (parseFloat(a.price ?? "0"));
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  // Server already applies price/rating filters, promoted-first ordering, and
+  // the chosen sort — only the free-text search is done client-side.
+  const filtered = textFiltered;
 
   function handleCategoryClick(cat: Category) {
     const slug = city ? `${cat.slug}-${cityToSlug(city)}` : cat.slug;
@@ -146,6 +148,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>ServiciiLocale - Găsește servicii locale verificate în orașul tău</title>
+        <meta name="description" content="Mâncare gătită acasă, frizeri, meșteri, transport — descoperă și contactează prestatori locali verificați din orașul tău, cu recenzii reale." />
+      </Helmet>
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 text-foreground">
         <div className="absolute inset-0 opacity-[0.05]"
@@ -298,7 +304,11 @@ export default function HomePage() {
               {isLoading ? "Se încarcă..." : `${filtered.length} ${filtered.length === 1 ? "anunț" : "anunțuri"} disponibile`}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={() => setShowFilters(v => !v)}
+              className={`flex items-center gap-1.5 border rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${showFilters || minPrice || maxPrice || minRating ? "bg-primary/5 border-primary/40 text-primary" : "bg-white border-border text-foreground hover:border-primary/40"}`}>
+              <SlidersHorizontal className="h-3.5 w-3.5" />Filtre
+            </button>
             <div className="flex items-center gap-1.5 bg-white border border-border rounded-lg px-1 py-0.5 text-sm">
               <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground ml-2 flex-shrink-0" />
               <Select value={sort} onValueChange={setSort}>
@@ -309,11 +319,22 @@ export default function HomePage() {
                   <SelectItem value="newest">Cele mai noi</SelectItem>
                   <SelectItem value="price_asc">Preț crescător</SelectItem>
                   <SelectItem value="price_desc">Preț descrescător</SelectItem>
+                  <SelectItem value="rating">Cele mai bine notate</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {(city || categoryId || search) && (
-              <button onClick={() => { setCity(""); setCategoryId(""); setSearch(""); }}
+            <div className="flex items-center bg-white border border-border rounded-lg p-0.5">
+              <button onClick={() => setView("list")} title="Vizualizare listă"
+                className={`p-1.5 rounded-md transition-colors ${view === "list" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"}`}>
+                <ListIcon className="h-3.5 w-3.5" />
+              </button>
+              <button onClick={() => setView("map")} title="Vizualizare hartă"
+                className={`p-1.5 rounded-md transition-colors ${view === "map" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"}`}>
+                <MapIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            {(city || categoryId || search || minPrice || maxPrice || minRating) && (
+              <button onClick={() => { setCity(""); setCategoryId(""); setSearch(""); setMinPrice(""); setMaxPrice(""); setMinRating(""); }}
                 className="text-xs text-primary border border-primary/30 hover:bg-accent px-3 py-1.5 rounded-lg transition-colors">
                 Resetează
               </button>
@@ -321,8 +342,37 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Listings grid */}
-        {isLoading ? (
+        {showFilters && (
+          <div className="flex flex-wrap items-end gap-4 mb-6 p-4 bg-white border border-border rounded-2xl shadow-card">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Preț minim (lei)</label>
+              <input type="number" min={0} value={minPrice} onChange={e => setMinPrice(e.target.value)}
+                placeholder="0" className="w-28 px-3 py-1.5 text-sm rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-primary" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Preț maxim (lei)</label>
+              <input type="number" min={0} value={maxPrice} onChange={e => setMaxPrice(e.target.value)}
+                placeholder="Fără limită" className="w-32 px-3 py-1.5 text-sm rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-primary" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Rating minim</label>
+              <Select value={minRating || "__any"} onValueChange={v => setMinRating(v === "__any" ? "" : v)}>
+                <SelectTrigger className="w-36 h-auto py-1.5 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__any">Orice rating</SelectItem>
+                  <SelectItem value="4.5">4.5+ ★</SelectItem>
+                  <SelectItem value="4">4+ ★</SelectItem>
+                  <SelectItem value="3">3+ ★</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
+        {/* Listings grid / map */}
+        {view === "map" && !isLoading ? (
+          <ListingsMap listings={filtered} />
+        ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-white rounded-2xl border border-border p-5 animate-pulse shadow-card">
@@ -453,6 +503,13 @@ function ListingCard({ listing, isFav, onToggleFav }: { listing: Listing; isFav?
           </p>
           {listing.description && (
             <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{listing.description}</p>
+          )}
+          {listing.ratingAvg && listing.reviewCount > 0 && (
+            <div className="flex items-center gap-1 mb-2 text-xs">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <span className="font-semibold text-foreground">{Number(listing.ratingAvg).toFixed(1)}</span>
+              <span className="text-muted-foreground">({listing.reviewCount})</span>
+            </div>
           )}
           <div className="flex-1" />
           {listing.price && (

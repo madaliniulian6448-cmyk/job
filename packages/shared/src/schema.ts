@@ -77,8 +77,26 @@ export const listings = pgTable("listings", {
   promotedUntil: timestamp("promoted_until"),
   viewCount: integer("view_count").notNull().default(0),
   contactClickCount: integer("contact_click_count").notNull().default(0),
+  ratingAvg: numeric("rating_avg", { precision: 3, scale: 2 }),
+  reviewCount: integer("review_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+// Daily view/contact-click counters per listing, used to power the business
+// analytics trend chart without re-scanning raw event logs.
+export const listingDailyStats = pgTable(
+  "listing_daily_stats",
+  {
+    id: serial("id").primaryKey(),
+    listingId: integer("listing_id")
+      .notNull()
+      .references(() => listings.id, { onDelete: "cascade" }),
+    date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD (UTC)
+    views: integer("views").notNull().default(0),
+    contactClicks: integer("contact_clicks").notNull().default(0),
+  },
+  (t) => [unique("listing_daily_stats_listing_date_unique").on(t.listingId, t.date)]
+);
 
 export const reviews = pgTable(
   "reviews",
@@ -92,6 +110,8 @@ export const reviews = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     rating: smallint("rating").notNull(),
     comment: text("comment"),
+    reply: text("reply"),
+    repliedAt: timestamp("replied_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [unique("reviews_listing_user_unique").on(t.listingId, t.userId)]
@@ -171,6 +191,13 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   user: one(users, { fields: [reviews.userId], references: [users.id] }),
 }));
 
+export const listingDailyStatsRelations = relations(listingDailyStats, ({ one }) => ({
+  listing: one(listings, {
+    fields: [listingDailyStats.listingId],
+    references: [listings.id],
+  }),
+}));
+
 export const reportsRelations = relations(reports, ({ one }) => ({
   listing: one(listings, {
     fields: [reports.listingId],
@@ -195,3 +222,4 @@ export type NewListing = typeof listings.$inferInsert;
 export type Category = typeof categories.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
+export type ListingDailyStat = typeof listingDailyStats.$inferSelect;

@@ -12,6 +12,27 @@ const reviewSchema = z.object({
   comment: z.string().max(1000).optional(),
 });
 
+const replySchema = z.object({
+  reply: z.string().trim().min(1, "Răspunsul nu poate fi gol").max(1000),
+});
+
+// Recompute and cache the average rating + review count on the listing row so
+// the marketplace listing/filter query can sort and filter by rating cheaply.
+async function refreshListingRatingCache(listingId: number) {
+  const [stats] = await db
+    .select({ avgRating: avg(reviews.rating), totalCount: count(reviews.id) })
+    .from(reviews)
+    .where(eq(reviews.listingId, listingId));
+
+  await db
+    .update(listings)
+    .set({
+      ratingAvg: stats.avgRating ? Number(stats.avgRating).toFixed(2) : null,
+      reviewCount: Number(stats.totalCount),
+    })
+    .where(eq(listings.id, listingId));
+}
+
 router.get("/listing/:id", async (req, res) => {
   const listingId = Number(req.params.id);
 
@@ -74,6 +95,8 @@ router.post("/listing/:id", requireAuth, async (req, res) => {
     .values({ listingId, userId, rating: parsed.data.rating, comment: parsed.data.comment })
     .returning();
 
+  await refreshListingRatingCache(listingId);
+
   // Notify listing owner
   const reviewer = await db.query.users.findFirst({ where: eq(users.id, userId) });
   const stars = "★".repeat(parsed.data.rating) + "☆".repeat(5 - parsed.data.rating);
@@ -109,6 +132,8 @@ router.put("/listing/:listingId/my", requireAuth, async (req, res) => {
     .where(and(eq(reviews.listingId, listingId), eq(reviews.userId, userId)))
     .returning();
 
+  await refreshListingRatingCache(listingId);
+
   res.json({ review: row });
 });
 
@@ -120,7 +145,66 @@ router.delete("/listing/:listingId/my", requireAuth, async (req, res) => {
     .delete(reviews)
     .where(and(eq(reviews.listingId, listingId), eq(reviews.userId, userId)));
 
+  await refreshListingRatingCache(listingId);
+
   res.json({ ok: true });
+});
+
+// ── PUT /:id/reply ─────────────────────────────────────────────────────────
+// Only the listing owner may reply to a review left on their listing.
+router.put("/:id/reply", requireAuth, async (req, res) => {
+  const reviewId = Number(req.params.id);
+  if (isNaN(reviewId)) return res.status(400).json({ error: "ID invalid" });
+
+  const parsed = replySchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0].message });
+  }
+
+  const existing = await db.query.reviews.findFirst({
+    where: eq(reviews.id, reviewId),
+  });
+  if (!existing) return res.status(404).json({ error: "Recenzia nu există" });
+
+  const listing = await db.query.listings.findFirst({
+    where: eq(listings.id, existing.listingId),
+  });
+  if (!listing || listing.userId !== req.auth!.userId) {
+    return res.status(403).json({ error: "Doar proprietarul anunțului poate răspunde" });
+  }
+
+  const [row] = await db
+    .update(reviews)
+    .set({ reply: parsed.data.reply, repliedAt: new Date() })
+    .where(eq(reviews.id, reviewId))
+    .returning();
+
+  res.json({ review: row });
+});
+
+router.delete("/:id/reply", requireAuth, async (req, res) => {
+  const reviewId = Number(req.params.id);
+  if (isNaN(reviewId)) return res.status(400).json({ error: "ID invalid" });
+
+  const existing = await db.query.reviews.findFirst({
+    where: eq(reviews.id, reviewId),
+  });
+  if (!existing) return res.status(404).json({ error: "Recenzia nu există" });
+
+  const listing = await db.query.listings.findFirst({
+    where: eq(listings.id, existing.listingId),
+  });
+  if (!listing || listing.userId !== req.auth!.userId) {
+    return res.status(403).json({ error: "Doar proprietarul anunțului poate șterge răspunsul" });
+  }
+
+  const [row] = await db
+    .update(reviews)
+    .set({ reply: null, repliedAt: null })
+    .where(eq(reviews.id, reviewId))
+    .returning();
+
+  res.json({ review: row });
 });
 
 export default router;

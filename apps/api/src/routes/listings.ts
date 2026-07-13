@@ -1,15 +1,41 @@
 import { Router } from "express";
-import { and, desc, eq, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, ne, or, sql } from "drizzle-orm";
 import { db } from "../db";
-import { listings, users, categories, reports } from "shared/src/schema";
+import { listings, users, categories, reports, listingDailyStats } from "shared/src/schema";
 import { listingSchema } from "shared/src/validators";
 import { requireAuth } from "../auth";
 
 const router = Router();
 
+function todayUTC(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Fire-and-forget upsert of today's daily counter row for a listing.
+async function bumpDailyStat(listingId: number, field: "views" | "contactClicks") {
+  const date = todayUTC();
+  try {
+    await db
+      .insert(listingDailyStats)
+      .values({ listingId, date, views: field === "views" ? 1 : 0, contactClicks: field === "contactClicks" ? 1 : 0 })
+      .onConflictDoUpdate({
+        target: [listingDailyStats.listingId, listingDailyStats.date],
+        set: {
+          views: field === "views" ? sql`${listingDailyStats.views} + 1` : sql`${listingDailyStats.views}`,
+          contactClicks:
+            field === "contactClicks"
+              ? sql`${listingDailyStats.contactClicks} + 1`
+              : sql`${listingDailyStats.contactClicks}`,
+        },
+      });
+  } catch {
+    // Non-critical — never block the request on stats tracking.
+  }
+}
+
 // ── GET /  ─────────────────────────────────────────────────────────────────
 router.get("/", async (req, res) => {
-  const { city, categoryId } = req.query;
+  const { city, categoryId, minPrice, maxPrice, minRating, sort } = req.query;
 
   const rows = await db
     .select({
@@ -47,6 +73,10 @@ router.get("/", async (req, res) => {
     return 0;
   });
 
+  const minPriceNum = minPrice && String(minPrice).length > 0 ? Number(minPrice) : null;
+  const maxPriceNum = maxPrice && String(maxPrice).length > 0 ? Number(maxPrice) : null;
+  const minRatingNum = minRating && String(minRating).length > 0 ? Number(minRating) : null;
+
   const filtered = sorted.filter(({ listing }) => {
     if (city && String(city).length > 0) {
       if (listing.city.toLowerCase() !== String(city).toLowerCase()) return false;
@@ -54,8 +84,39 @@ router.get("/", async (req, res) => {
     if (categoryId && String(categoryId).length > 0) {
       if (listing.categoryId !== Number(categoryId)) return false;
     }
+    if (minPriceNum !== null && !isNaN(minPriceNum)) {
+      if (listing.price === null || Number(listing.price) < minPriceNum) return false;
+    }
+    if (maxPriceNum !== null && !isNaN(maxPriceNum)) {
+      if (listing.price === null || Number(listing.price) > maxPriceNum) return false;
+    }
+    if (minRatingNum !== null && !isNaN(minRatingNum)) {
+      if (!listing.ratingAvg || Number(listing.ratingAvg) < minRatingNum) return false;
+    }
     return true;
   });
+
+  // Optional secondary sort, applied within the promoted-first grouping already done above.
+  const sortKey = String(sort ?? "newest");
+  if (sortKey !== "newest") {
+    filtered.sort((a, b) => {
+      const aPromoted = a.listing.isPromoted && a.listing.promotedUntil && new Date(a.listing.promotedUntil) > now;
+      const bPromoted = b.listing.isPromoted && b.listing.promotedUntil && new Date(b.listing.promotedUntil) > now;
+      if (aPromoted && !bPromoted) return -1;
+      if (!aPromoted && bPromoted) return 1;
+
+      switch (sortKey) {
+        case "price_asc":
+          return Number(a.listing.price ?? Infinity) - Number(b.listing.price ?? Infinity);
+        case "price_desc":
+          return Number(b.listing.price ?? -Infinity) - Number(a.listing.price ?? -Infinity);
+        case "rating":
+          return Number(b.listing.ratingAvg ?? 0) - Number(a.listing.ratingAvg ?? 0);
+        default:
+          return 0;
+      }
+    });
+  }
 
   res.json({
     listings: filtered.map(({ listing, owner, category }) => ({
@@ -167,6 +228,7 @@ router.get("/:id", async (req, res) => {
     .set({ viewCount: sql`${listings.viewCount} + 1` })
     .where(eq(listings.id, id))
     .catch(() => {});
+  bumpDailyStat(id, "views");
 
   const { listing, owner, category } = row[0];
   res.json({ listing: { ...listing, owner, category } });
@@ -180,8 +242,74 @@ router.post("/:id/contact-click", async (req, res) => {
       .set({ contactClickCount: sql`${listings.contactClickCount} + 1` })
       .where(eq(listings.id, id))
       .catch(() => {});
+    bumpDailyStat(id, "contactClicks");
   }
   res.json({ ok: true });
+});
+
+// ── GET /mine/stats ────────────────────────────────────────────────────────
+// Aggregated daily views/contact-clicks across all of the caller's listings,
+// for the business analytics panel.
+router.get("/mine/stats", requireAuth, async (req, res) => {
+  const days = Math.min(Math.max(Number(req.query.days) || 30, 7), 90);
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - (days - 1));
+  const sinceStr = since.toISOString().slice(0, 10);
+
+  const myListings = await db.query.listings.findMany({
+    where: eq(listings.userId, req.auth!.userId),
+  });
+  const listingIds = myListings.map((l) => l.id);
+
+  const totals = {
+    totalViews: myListings.reduce((s, l) => s + l.viewCount, 0),
+    totalContactClicks: myListings.reduce((s, l) => s + l.contactClickCount, 0),
+    listingCount: myListings.length,
+  };
+
+  if (listingIds.length === 0) {
+    return res.json({ series: [], totals, byListing: [] });
+  }
+
+  const rows = await db
+    .select({
+      date: listingDailyStats.date,
+      views: sql<number>`sum(${listingDailyStats.views})`.mapWith(Number),
+      contactClicks: sql<number>`sum(${listingDailyStats.contactClicks})`.mapWith(Number),
+    })
+    .from(listingDailyStats)
+    .where(
+      and(
+        sql`${listingDailyStats.listingId} = ANY(${sql.raw(`ARRAY[${listingIds.join(",")}]`)})`,
+        gte(listingDailyStats.date, sinceStr)
+      )
+    )
+    .groupBy(listingDailyStats.date)
+    .orderBy(listingDailyStats.date);
+
+  // Fill in missing days with zeros so the chart has a continuous axis.
+  const byDate = new Map(rows.map((r) => [r.date, r]));
+  const series: { date: string; views: number; contactClicks: number }[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(since);
+    d.setUTCDate(d.getUTCDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    const found = byDate.get(key);
+    series.push({ date: key, views: found?.views ?? 0, contactClicks: found?.contactClicks ?? 0 });
+  }
+
+  const byListing = myListings
+    .map((l) => ({
+      id: l.id,
+      title: l.title,
+      viewCount: l.viewCount,
+      contactClickCount: l.contactClickCount,
+      ratingAvg: l.ratingAvg,
+      reviewCount: l.reviewCount,
+    }))
+    .sort((a, b) => b.viewCount - a.viewCount);
+
+  res.json({ series, totals, byListing });
 });
 
 // ── POST /:id/report ───────────────────────────────────────────────────────

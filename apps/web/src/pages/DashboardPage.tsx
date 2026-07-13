@@ -8,8 +8,11 @@ import {
   Pencil, Trash2, ToggleLeft, ToggleRight, MapPin,
   Building2, Star, AlertCircle, CheckCircle, Clock, X,
   Phone, Tag, Eye, EyeOff, ArrowRight, Lock, Settings,
-  ImagePlus, Briefcase, CreditCard
+  ImagePlus, Briefcase, CreditCard, BarChart3, MousePointerClick
 } from "lucide-react";
+import {
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+} from "recharts";
 
 interface Listing {
   id: number;
@@ -204,6 +207,139 @@ function StatusBanner({ user }: { user: NonNullable<ReturnType<typeof useAuth>["
   return null;
 }
 
+interface StatsResponse {
+  series: { date: string; views: number; contactClicks: number }[];
+  totals: { totalViews: number; totalContactClicks: number; listingCount: number };
+  byListing: {
+    id: number;
+    title: string;
+    viewCount: number;
+    contactClickCount: number;
+    ratingAvg: string | null;
+    reviewCount: number;
+  }[];
+}
+
+function formatDay(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("ro-RO", { day: "2-digit", month: "2-digit" });
+}
+
+function AnalyticsPanel() {
+  const { data, isLoading } = useQuery<StatsResponse>({
+    queryKey: ["myListingStats"],
+    queryFn: () => apiFetch("/listings/mine/stats?days=30"),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-2xl border border-border p-6 h-72 animate-pulse mb-8" />
+    );
+  }
+
+  if (!data || data.totals.listingCount === 0) return null;
+
+  const chartData = data.series.map((s) => ({
+    ...s,
+    label: formatDay(s.date),
+  }));
+
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          Analiză
+        </h2>
+      </div>
+
+      {/* Totals */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="bg-white rounded-2xl border border-border shadow-card p-5 flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-blue-50">
+            <Eye className="h-5 w-5 text-blue-500" />
+          </div>
+          <div>
+            <div className="text-xl font-extrabold text-foreground">{data.totals.totalViews}</div>
+            <div className="text-xs text-muted-foreground">vizualizări totale</div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-border shadow-card p-5 flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-emerald-50">
+            <MousePointerClick className="h-5 w-5 text-emerald-500" />
+          </div>
+          <div>
+            <div className="text-xl font-extrabold text-foreground">{data.totals.totalContactClicks}</div>
+            <div className="text-xs text-muted-foreground">click-uri de contact</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="bg-white rounded-2xl border border-border shadow-card p-5 mb-4">
+        <h3 className="text-sm font-semibold text-muted-foreground mb-3">Vizualizări &amp; click-uri (ultimele 30 de zile)</h3>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 90%)" />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={Math.ceil(chartData.length / 8)} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+              <Tooltip
+                contentStyle={{ borderRadius: 12, border: "1px solid hsl(220 14% 90%)", fontSize: 12 }}
+                labelFormatter={(label) => `Ziua ${label}`}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="views" name="Vizualizări" stroke="hsl(225 70% 48%)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="contactClicks" name="Click-uri" stroke="hsl(142 71% 45%)" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Per-listing table */}
+      <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden">
+        <h3 className="text-sm font-semibold text-muted-foreground px-5 pt-4 pb-2">Pe anunț</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-t border-border text-left text-xs text-muted-foreground">
+                <th className="px-5 py-2 font-medium">Anunț</th>
+                <th className="px-5 py-2 font-medium text-right">Vizualizări</th>
+                <th className="px-5 py-2 font-medium text-right">Click-uri</th>
+                <th className="px-5 py-2 font-medium text-right">Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.byListing.map((l) => (
+                <tr key={l.id} className="border-t border-border/60">
+                  <td className="px-5 py-2.5 font-medium text-foreground truncate max-w-[220px]">
+                    <Link to={`/listing/${l.id}`} className="hover:text-primary transition-colors">
+                      {l.title}
+                    </Link>
+                  </td>
+                  <td className="px-5 py-2.5 text-right">{l.viewCount}</td>
+                  <td className="px-5 py-2.5 text-right">{l.contactClickCount}</td>
+                  <td className="px-5 py-2.5 text-right">
+                    {l.ratingAvg ? (
+                      <span className="inline-flex items-center gap-1 justify-end">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                        {Number(l.ratingAvg).toFixed(1)}
+                        <span className="text-muted-foreground">({l.reviewCount})</span>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -368,6 +504,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       )}
+
+      {/* Analytics */}
+      {hasBusiness && isActive && <AnalyticsPanel />}
 
       {/* Business section */}
       {hasBusiness && (

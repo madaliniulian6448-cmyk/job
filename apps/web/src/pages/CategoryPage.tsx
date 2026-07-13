@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
@@ -22,6 +22,8 @@ import NotFoundPage from "./NotFoundPage";
 import ListingsMap from "../components/ListingsMap";
 import { Helmet } from "react-helmet-async";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { PageSpinner } from "../components/ui/spinner";
+import { EmptyState } from "../components/ui/empty-state";
 
 interface Category {
   id: number;
@@ -160,29 +162,38 @@ export default function CategoryPage() {
 
   const listings: Listing[] = listingsData?.listings ?? [];
 
-  useEffect(() => {
-    if (category) {
-      document.title = city
-        ? `${category.name} în ${city} — ServiciiLocale`
-        : `${category.name} — ServiciiLocale`;
-    }
-    return () => {
-      document.title = "ServiciiLocale";
-    };
-  }, [category, city]);
+  const pageTitle = category
+    ? city
+      ? `${category.name} în ${city} — ServiciiLocale`
+      : `${category.name} — ServiciiLocale`
+    : "ServiciiLocale";
+  const pageDescription = category
+    ? city
+      ? `Găsește ${category.name.toLowerCase()} verificați în ${city}. Compară prețuri, recenzii și contactează direct furnizorii locali.`
+      : `Găsește ${category.name.toLowerCase()} verificați din toată România. Compară prețuri, recenzii și contactează direct furnizorii locali.`
+    : "Platforma #1 pentru servicii locale în România.";
+
+  function clearFilters() {
+    setMinPrice("");
+    setMaxPrice("");
+    setMinRating("");
+    setSort("newest");
+  }
+
+  const activeFilterCount = [minPrice, maxPrice, minRating].filter(Boolean).length;
 
   if (loadingCats) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   if (!category) return <NotFoundPage />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+      </Helmet>
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
         <Link to="/" className="hover:text-primary transition-colors">
@@ -247,7 +258,113 @@ export default function CategoryPage() {
         ))}
       </div>
 
-      {/* Listing grid */}
+      {/* Filters + sort + view toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setShowFilters((s) => !s)}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border transition-colors ${
+              showFilters || activeFilterCount > 0
+                ? "bg-primary/10 border-primary/30 text-primary"
+                : "bg-white border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filtre
+            {activeFilterCount > 0 && (
+              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-primary text-white text-[10px] font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-auto h-[38px] gap-1.5 rounded-xl border-border text-sm">
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Cele mai noi</SelectItem>
+              <SelectItem value="price_asc">Preț crescător</SelectItem>
+              <SelectItem value="price_desc">Preț descrescător</SelectItem>
+              <SelectItem value="rating">Rating</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* List / Map toggle */}
+        <div className="inline-flex items-center rounded-xl border border-border bg-white p-1">
+          <button
+            onClick={() => setView("list")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              view === "list" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ListIcon className="h-3.5 w-3.5" />
+            Listă
+          </button>
+          <button
+            onClick={() => setView("map")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              view === "map" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MapIcon className="h-3.5 w-3.5" />
+            Hartă
+          </button>
+        </div>
+      </div>
+
+      {showFilters && (
+        <div className="bg-white rounded-2xl border border-border shadow-card p-5 mb-6 flex flex-wrap items-end gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Preț minim (lei)</label>
+            <input
+              type="number"
+              min={0}
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              placeholder="0"
+              className="w-32 border-2 border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Preț maxim (lei)</label>
+            <input
+              type="number"
+              min={0}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              placeholder="Fără limită"
+              className="w-32 border-2 border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Rating minim</label>
+            <Select value={minRating || "any"} onValueChange={(v) => setMinRating(v === "any" ? "" : v)}>
+              <SelectTrigger className="w-36 h-[38px] rounded-xl border-2 border-border text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Orice rating</SelectItem>
+                <SelectItem value="4.5">4.5+ <Star className="inline h-3 w-3 fill-amber-400 text-amber-400" /></SelectItem>
+                <SelectItem value="4">4+ <Star className="inline h-3 w-3 fill-amber-400 text-amber-400" /></SelectItem>
+                <SelectItem value="3">3+ <Star className="inline h-3 w-3 fill-amber-400 text-amber-400" /></SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={clearFilters}
+              className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors pb-2.5"
+            >
+              Șterge filtrele
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Listing grid / map */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {[...Array(8)].map((_, i) => (
@@ -266,18 +383,13 @@ export default function CategoryPage() {
           ))}
         </div>
       ) : listings.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-border shadow-card">
-          <Building2 className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-          <h3 className="font-bold text-lg mb-2">Niciun anunț găsit</h3>
-          <p className="text-sm text-muted-foreground">
-            Nu există anunțuri pentru{" "}
-            <strong>
-              {category.name}
-              {city ? ` în ${city}` : ""}
-            </strong>{" "}
-            momentan.
-          </p>
-        </div>
+        <EmptyState
+          icon={Building2}
+          title="Niciun anunț găsit"
+          description={`Nu există anunțuri pentru ${category.name}${city ? ` în ${city}` : ""} momentan.`}
+        />
+      ) : view === "map" ? (
+        <ListingsMap listings={listings} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {listings.map((listing) => (

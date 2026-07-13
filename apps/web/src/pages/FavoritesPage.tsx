@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   Heart, MapPin, Phone, Tag, Building2, Star, X, Zap, BadgeCheck,
 } from "lucide-react";
+import { EmptyState } from "../components/ui/empty-state";
 
 interface Listing {
   id: number;
@@ -75,21 +76,19 @@ export default function FavoritesPage() {
           ))}
         </div>
       ) : favorites.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-border shadow-card">
-          <div className="w-16 h-16 rounded-full bg-pink-50 flex items-center justify-center mx-auto mb-4">
-            <Heart className="h-8 w-8 text-pink-300" />
-          </div>
-          <h3 className="font-bold text-lg mb-2">Niciun anunț salvat</h3>
-          <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">
-            Apasă iconița ♥ pe orice anunț pentru a-l salva aici.
-          </p>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Explorează anunțuri
-          </Link>
-        </div>
+        <EmptyState
+          icon={Heart}
+          title="Niciun anunț salvat"
+          description="Apasă iconița ♥ pe orice anunț pentru a-l salva aici."
+          action={
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Explorează anunțuri
+            </Link>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {favorites.map((listing) => {

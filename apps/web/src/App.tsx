@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./lib/auth";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import CookieConsent from "./components/CookieConsent";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -13,6 +15,8 @@ import ListingDetailPage from "./pages/ListingDetailPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AboutPage from "./pages/AboutPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import CategoryPage from "./pages/CategoryPage";
 
@@ -36,9 +40,9 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main>
+      <main className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -52,11 +56,15 @@ export default function App() {
           <Route path="/favorite" element={<RequireAuth><FavoritesPage /></RequireAuth>} />
           <Route path="/notificari" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
           <Route path="/despre" element={<AboutPage />} />
+          <Route path="/termeni" element={<TermsPage />} />
+          <Route path="/confidentialitate" element={<PrivacyPage />} />
           {/* SEO category pages: /:slug e.g. /frizerie or /frizerie-bucuresti */}
           <Route path="/:slug" element={<CategoryPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+      <Footer />
+      <CookieConsent />
     </div>
   );
 }

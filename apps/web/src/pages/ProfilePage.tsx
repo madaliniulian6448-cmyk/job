@@ -169,11 +169,15 @@ export default function ProfilePage() {
 
         <div className="relative z-10 px-6 pb-6">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 -mt-10">
-            <div className="flex items-end gap-4">
+            <div className="flex items-start gap-4">
               <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg ring-4 ring-white flex-shrink-0">
                 <span className="text-2xl font-extrabold text-white">{profile.name[0].toUpperCase()}</span>
               </div>
-              <div className="pb-1">
+              {/* Anchored a fixed distance below the row's top (which sits -mt-10 into
+                  the cover) so the name always clears the cover/white boundary, even
+                  when the business badge beneath it makes this block taller than half
+                  the avatar — otherwise the text straddles the seam and looks clipped. */}
+              <div className="mt-11">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <h1 className="text-xl font-extrabold text-foreground">{profile.name}</h1>
                   {profile.isVerified && (

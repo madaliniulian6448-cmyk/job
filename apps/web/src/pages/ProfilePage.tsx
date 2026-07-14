@@ -128,11 +128,33 @@ export default function ProfilePage() {
 
       {/* Cover + header */}
       <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden mb-6">
-        <div className={`h-28 sm:h-36 ${isVisibleBusiness && profile.businessType === "company" ? "bg-gradient-to-r from-amber-400 via-orange-400 to-primary" : "bg-gradient-to-r from-primary to-blue-600"}`} />
-        <div className="px-6 pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-10">
+        <div className={`relative h-28 sm:h-32 ${isVisibleBusiness && profile.businessType === "company" ? "bg-gradient-to-br from-amber-400 via-orange-400 to-primary" : "bg-gradient-to-br from-primary via-blue-600 to-blue-700"}`}>
+          <div
+            className="absolute inset-0 opacity-[0.12]"
+            style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "16px 16px" }}
+          />
+          {/* Toolbar — actions live on the cover, decoupled from the identity row below */}
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-1.5 bg-white/95 backdrop-blur text-foreground text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm hover:bg-white transition-colors"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Share2 className="h-3.5 w-3.5" />}
+              {copied ? "Copiat" : "Distribuie"}
+            </button>
+            {isMe && (
+              <Link to="/settings"
+                className="inline-flex items-center gap-1.5 bg-white/95 backdrop-blur text-foreground text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm hover:bg-white transition-colors">
+                Editează profilul
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <div className="relative z-10 px-6 pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 -mt-10">
             <div className="flex items-end gap-4">
-              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-md ring-4 ring-white flex-shrink-0">
+              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg ring-4 ring-white flex-shrink-0">
                 <span className="text-2xl font-extrabold text-white">{profile.name[0].toUpperCase()}</span>
               </div>
               <div className="pb-1">
@@ -152,28 +174,13 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pb-1">
-              {stats && stats.reviewCount > 0 && (
-                <div className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-xl">
-                  <Stars value={stats.avgRating ?? 0} />
-                  <span className="text-sm font-bold">{stats.avgRating}</span>
-                  <span className="text-xs text-muted-foreground">({stats.reviewCount})</span>
-                </div>
-              )}
-              <button
-                onClick={handleShare}
-                className="inline-flex items-center gap-1.5 border-2 border-border text-sm font-semibold px-3 py-1.5 rounded-xl hover:bg-secondary transition-colors"
-              >
-                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Share2 className="h-4 w-4" />}
-                {copied ? "Copiat" : "Distribuie"}
-              </button>
-              {isMe && (
-                <Link to="/settings"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-border text-sm font-semibold px-3 py-1.5 rounded-xl hover:bg-secondary transition-colors">
-                  Editează
-                </Link>
-              )}
-            </div>
+            {stats && stats.reviewCount > 0 && (
+              <div className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-xl self-start sm:self-auto">
+                <Stars value={stats.avgRating ?? 0} />
+                <span className="text-sm font-bold">{stats.avgRating}</span>
+                <span className="text-xs text-muted-foreground">({stats.reviewCount} recenzii)</span>
+              </div>
+            )}
           </div>
 
           {profile.businessName && isVisibleBusiness && (

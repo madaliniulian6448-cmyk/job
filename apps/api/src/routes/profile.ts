@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { db } from "../db";
 import { users, listings, reviews } from "shared/src/schema";
 import { requireAuth } from "../auth";
@@ -10,6 +10,8 @@ const router = Router();
 
 router.get("/:id", async (req, res) => {
   const id = Number(req.params.id);
+  if (Number.isNaN(id)) return res.status(400).json({ error: "Id invalid" });
+
   const user = await db.query.users.findFirst({ where: eq(users.id, id) });
   if (!user) return res.status(404).json({ error: "Profil inexistent" });
 
@@ -19,8 +21,50 @@ router.get("/:id", async (req, res) => {
     with: { category: true },
   });
 
+  // Aggregate rating across all of this user's listings from the per-listing
+  // cached rating/review counts, so we avoid a second heavy join here.
+  const totalReviewCount = userListings.reduce((sum, l) => sum + l.reviewCount, 0);
+  const avgRating = totalReviewCount > 0
+    ? userListings.reduce((sum, l) => sum + (l.ratingAvg ? Number(l.ratingAvg) * l.reviewCount : 0), 0) / totalReviewCount
+    : null;
+
+  const categoryMap = new Map<number, { id: number; name: string; slug: string }>();
+  const galleryImages: string[] = [];
+  for (const l of userListings) {
+    if (l.category) categoryMap.set(l.category.id, l.category);
+    if (l.isActive) galleryImages.push(...l.images);
+  }
+
+  const listingIds = userListings.map((l) => l.id);
+  const recentReviews = listingIds.length === 0
+    ? []
+    : await db
+        .select({
+          review: reviews,
+          author: { id: users.id, name: users.name },
+          listing: { id: listings.id, title: listings.title },
+        })
+        .from(reviews)
+        .innerJoin(users, eq(reviews.userId, users.id))
+        .innerJoin(listings, eq(reviews.listingId, listings.id))
+        .where(inArray(reviews.listingId, listingIds))
+        .orderBy(desc(reviews.createdAt))
+        .limit(10);
+
   const { passwordHash, ...safe } = user;
-  res.json({ user: safe, listings: userListings });
+  res.json({
+    user: safe,
+    listings: userListings,
+    stats: {
+      totalListings: userListings.length,
+      activeListings: userListings.filter((l) => l.isActive).length,
+      avgRating: avgRating !== null ? Number(avgRating.toFixed(1)) : null,
+      reviewCount: totalReviewCount,
+      categories: Array.from(categoryMap.values()),
+      gallery: galleryImages.slice(0, 8),
+    },
+    reviews: recentReviews.map(({ review, author, listing }) => ({ ...review, author, listing })),
+  });
 });
 
 const settingsSchema = z.object({

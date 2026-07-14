@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Bell, Star, CheckCircle, XCircle, Check, CheckCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EmptyState } from "../components/ui/empty-state";
+import { EmptyBellIllustration } from "../components/ui/illustrations";
 
 interface Notification {
   id: number;
@@ -102,7 +103,7 @@ export default function NotificationsPage() {
         </div>
       ) : notifs.length === 0 ? (
         <EmptyState
-          icon={Bell}
+          illustration={EmptyBellIllustration}
           title="Nicio notificare"
           description="Vei primi notificări când cineva îți lasă o recenzie sau când statusul firmei se schimbă."
         />

@@ -64,7 +64,10 @@ const authLimiter = rateLimit({
   message: { error: "Prea multe încercări. Încearcă din nou mai târziu." },
 });
 app.use("/api", generalLimiter);
-app.use("/api/auth", authLimiter);
+// Only the actual credential-guessing targets get the tight limit — /me is a
+// session check fired on every page load and must never lock a logged-in
+// user out of their own session.
+app.use(["/api/auth/login", "/api/auth/register"], authLimiter);
 
 app.use(
   cors({

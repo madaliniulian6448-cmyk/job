@@ -11,6 +11,8 @@ import {
 import { Helmet } from "react-helmet-async";
 import { PageSpinner } from "../components/ui/spinner";
 import { EmptyState } from "../components/ui/empty-state";
+import { EmptySearchIllustration, GenericEmptyIllustration, EmptyListingsIllustration, EmptyReviewsIllustration } from "../components/ui/illustrations";
+import { Badge } from "../components/ui/badge";
 
 interface PublicUser {
   id: number;
@@ -100,7 +102,7 @@ export default function ProfilePage() {
   if (isError || !profile) return (
     <div className="max-w-2xl mx-auto px-4 py-16">
       <EmptyState
-        icon={User}
+        illustration={EmptySearchIllustration}
         title="Profil negăsit"
         description="Profilul căutat nu există sau a fost șters."
         action={<Link to="/" className="text-primary text-sm font-semibold hover:underline">← Înapoi acasă</Link>}
@@ -185,11 +187,11 @@ export default function ProfilePage() {
                   )}
                 </div>
                 {isVisibleBusiness && (
-                  <div className={`inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${profile.businessType === "company" ? "bg-amber-50 text-amber-700" : "bg-blue-50 text-blue-700"}`}>
+                  <Badge variant={profile.businessType === "company" ? "warning" : "default"} className="mt-1">
                     {profile.businessType === "company"
                       ? <><Star className="h-3 w-3 fill-amber-400 text-amber-400" />Firmă înregistrată</>
                       : <><Briefcase className="h-3 w-3" />Firmă privată</>}
-                  </div>
+                  </Badge>
                 )}
               </div>
             </div>
@@ -232,9 +234,9 @@ export default function ProfilePage() {
           {isVisibleBusiness && stats && stats.categories.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
               {stats.categories.map((c) => (
-                <span key={c.id} className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-accent px-2.5 py-1 rounded-full">
+                <Badge key={c.id}>
                   <Tag className="h-3 w-3" />{c.name}
-                </span>
+                </Badge>
               ))}
             </div>
           )}
@@ -243,7 +245,7 @@ export default function ProfilePage() {
 
       {!isVisibleBusiness ? (
         <EmptyState
-          icon={User}
+          illustration={GenericEmptyIllustration}
           title="Cont utilizator"
           description="Acest utilizator nu are o firmă activă pe platformă."
         />
@@ -310,7 +312,7 @@ export default function ProfilePage() {
 
             {tab === "listings" ? (
               activeListings.length === 0 ? (
-                <EmptyState icon={Building2} title="Niciun anunț activ" />
+                <EmptyState illustration={EmptyListingsIllustration} title="Niciun anunț activ" />
               ) : (
                 <div className="space-y-3">
                   {activeListings.map((listing) => (
@@ -318,9 +320,9 @@ export default function ProfilePage() {
                       className="bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover transition-all p-5 flex items-start gap-4 group block">
                       <div className="flex-1 min-w-0">
                         {listing.category && (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-accent px-2 py-0.5 rounded-full mb-2">
+                          <Badge size="sm" className="mb-2">
                             <Tag className="h-3 w-3" />{listing.category.name}
-                          </span>
+                          </Badge>
                         )}
                         <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">{listing.title}</h3>
                         {listing.description && (
@@ -336,7 +338,7 @@ export default function ProfilePage() {
                 </div>
               )
             ) : reviews.length === 0 ? (
-              <EmptyState icon={MessageSquare} title="Nicio recenzie încă" description="Acest utilizator nu a primit încă recenzii pe anunțurile sale." />
+              <EmptyState illustration={EmptyReviewsIllustration} title="Nicio recenzie încă" description="Acest utilizator nu a primit încă recenzii pe anunțurile sale." />
             ) : (
               <div className="space-y-3">
                 {reviews.map((r) => (

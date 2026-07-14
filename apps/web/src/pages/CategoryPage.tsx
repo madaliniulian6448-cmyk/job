@@ -24,6 +24,8 @@ import { Helmet } from "react-helmet-async";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { PageSpinner } from "../components/ui/spinner";
 import { EmptyState } from "../components/ui/empty-state";
+import { EmptySearchIllustration } from "../components/ui/illustrations";
+import { Badge } from "../components/ui/badge";
 
 interface Category {
   id: number;
@@ -384,7 +386,7 @@ export default function CategoryPage() {
         </div>
       ) : listings.length === 0 ? (
         <EmptyState
-          icon={Building2}
+          illustration={EmptySearchIllustration}
           title="Niciun anunț găsit"
           description={`Nu există anunțuri pentru ${category.name}${city ? ` în ${city}` : ""} momentan.`}
         />
@@ -435,10 +437,10 @@ function CatListingCard({
     <div className="relative group bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 flex flex-col overflow-hidden">
       {isPromotedNow && (
         <div className="absolute top-2 left-2 z-10">
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full shadow-sm">
+          <Badge variant="brand">
             <Zap className="h-3 w-3" />
             Promovat
-          </span>
+          </Badge>
         </div>
       )}
 

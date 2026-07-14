@@ -6,6 +6,8 @@ import {
   Heart, MapPin, Phone, Tag, Building2, Star, X, Zap, BadgeCheck,
 } from "lucide-react";
 import { EmptyState } from "../components/ui/empty-state";
+import { EmptyFavoritesIllustration } from "../components/ui/illustrations";
+import { Badge } from "../components/ui/badge";
 
 interface Listing {
   id: number;
@@ -77,7 +79,7 @@ export default function FavoritesPage() {
         </div>
       ) : favorites.length === 0 ? (
         <EmptyState
-          icon={Heart}
+          illustration={EmptyFavoritesIllustration}
           title="Niciun anunț salvat"
           description="Apasă iconița ♥ pe orice anunț pentru a-l salva aici."
           action={
@@ -109,9 +111,9 @@ export default function FavoritesPage() {
                 {/* Promoted badge */}
                 {isPromotedNow && (
                   <div className="absolute top-2 left-2 z-10">
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full shadow-sm">
+                    <Badge variant="brand">
                       <Zap className="h-3 w-3" />Promovat
-                    </span>
+                    </Badge>
                   </div>
                 )}
 

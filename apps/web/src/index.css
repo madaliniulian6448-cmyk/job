@@ -1,31 +1,49 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Brand system — "Vecinătate" (neighborhood). Local-services trust reads as
+ * deep, confident indigo (not generic template blue); the warmth of an
+ * in-person referral reads as a terracotta accent used sparingly for CTAs
+ * and highlights. Sora carries headlines (geometric, assured); Inter stays
+ * on body copy for maximum legibility at small sizes.
+ */
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 220 25% 10%;
+    --background: 220 22% 97%;
+    --foreground: 224 32% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
-    --primary: 225 70% 48%;
+    --card-foreground: 224 32% 12%;
+
+    --primary: 230 62% 38%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 16% 96%;
-    --secondary-foreground: 220 25% 20%;
-    --muted: 220 16% 95%;
-    --muted-foreground: 220 10% 48%;
-    --accent: 225 70% 96%;
-    --accent-foreground: 225 70% 40%;
-    --destructive: 0 72% 51%;
+
+    --secondary: 220 18% 95%;
+    --secondary-foreground: 224 28% 22%;
+
+    --muted: 220 18% 94%;
+    --muted-foreground: 222 12% 46%;
+
+    --accent: 230 62% 95%;
+    --accent-foreground: 230 62% 34%;
+
+    /* Warm brand accent — used for CTAs and "premium" highlights only, never as a base UI color. */
+    --brand-accent: 22 88% 55%;
+    --brand-accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 225 70% 48%;
+
+    --border: 222 16% 89%;
+    --input: 222 16% 89%;
+    --ring: 230 62% 38%;
     --radius: 0.75rem;
-    --success: 142 71% 45%;
-    --warning: 38 92% 50%;
+
+    --success: 152 60% 36%;
+    --warning: 32 92% 50%;
   }
 }
 
@@ -43,6 +61,7 @@
     @apply bg-background text-foreground;
   }
   h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sora', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
@@ -59,8 +78,14 @@
   .text-balance {
     text-wrap: balance;
   }
+  .font-display {
+    font-family: 'Sora', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(225, 70%, 48%) 0%, hsl(240, 70%, 55%) 100%);
+    background: linear-gradient(135deg, hsl(230, 62%, 38%) 0%, hsl(242, 62%, 46%) 100%);
+  }
+  .gradient-brand {
+    background: linear-gradient(135deg, hsl(230, 62%, 38%) 0%, hsl(22, 88%, 55%) 100%);
   }
   .gradient-card {
     background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
@@ -69,6 +94,6 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
   }
   .shadow-card-hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 8px 32px rgba(34,68,204,0.08);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 8px 32px rgba(29,42,120,0.1);
   }
 }

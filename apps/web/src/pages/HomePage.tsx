@@ -15,6 +15,8 @@ import { cityToSlug } from "./CategoryPage";
 import ListingsMap from "../components/ListingsMap";
 import { Helmet } from "react-helmet-async";
 import { EmptyState } from "../components/ui/empty-state";
+import { EmptySearchIllustration } from "../components/ui/illustrations";
+import { Badge } from "../components/ui/badge";
 
 const CITIES = [
   "", "București", "Cluj-Napoca", "Timișoara", "Iași", "Constanța",
@@ -387,7 +389,7 @@ export default function HomePage() {
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState
-            icon={Building2}
+            illustration={EmptySearchIllustration}
             title="Niciun anunț găsit"
             description="Încearcă alte filtre sau fii primul care postează un serviciu în această zonă."
             action={
@@ -439,9 +441,9 @@ function ListingCard({ listing, isFav, onToggleFav }: { listing: Listing; isFav?
       {/* Promoted badge */}
       {isPromotedNow && (
         <div className="absolute top-2 left-2 z-10">
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full shadow-sm">
+          <Badge variant="brand">
             <Zap className="h-3 w-3" />Promovat
-          </span>
+          </Badge>
         </div>
       )}
 

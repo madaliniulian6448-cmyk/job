@@ -10,6 +10,8 @@ import {
   ZapOff, ExternalLink,
 } from "lucide-react";
 import { EmptyState } from "../components/ui/empty-state";
+import { EmptySearchIllustration, GenericEmptyIllustration, EmptyListingsIllustration } from "../components/ui/illustrations";
+import { Badge } from "../components/ui/badge";
 
 interface User {
   id: number; name: string; email: string; phone: string | null;
@@ -222,7 +224,7 @@ export default function AdminPage() {
           {loadingUsers ? (
             <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border h-20 animate-pulse" />)}</div>
           ) : filtered.length === 0 ? (
-            <EmptyState icon={Users} title="Niciun utilizator găsit" />
+            <EmptyState illustration={EmptySearchIllustration} title="Niciun utilizator găsit" />
           ) : (
             <div className="space-y-3">
               {filtered.map(user => {
@@ -377,7 +379,7 @@ export default function AdminPage() {
           {loadingReports ? (
             <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border h-24 animate-pulse" />)}</div>
           ) : visibleReports.length === 0 ? (
-            <EmptyState icon={Flag} title={`Niciun raport ${reportFilter === "pending" ? "în așteptare" : ""}`} />
+            <EmptyState illustration={GenericEmptyIllustration} title={`Niciun raport ${reportFilter === "pending" ? "în așteptare" : ""}`} />
           ) : (
             <div className="space-y-3">
               {visibleReports.map(r => {
@@ -433,7 +435,7 @@ export default function AdminPage() {
           {loadingListings ? (
             <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border h-20 animate-pulse" />)}</div>
           ) : adminListings.length === 0 ? (
-            <EmptyState icon={Building2} title="Niciun anunț disponibil" />
+            <EmptyState illustration={EmptyListingsIllustration} title="Niciun anunț disponibil" />
           ) : (
             <div className="space-y-3">
               {adminListings.map(l => {
@@ -449,9 +451,9 @@ export default function AdminPage() {
                           {l.title}<ExternalLink className="h-3 w-3" />
                         </Link>
                         {isActivePromo && (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">
+                          <Badge variant="brand">
                             <Zap className="h-3 w-3" />Promovat până {promoDate}
-                          </span>
+                          </Badge>
                         )}
                         {!l.isActive && (
                           <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">Inactiv</span>

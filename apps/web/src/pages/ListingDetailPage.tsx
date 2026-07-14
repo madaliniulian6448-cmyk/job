@@ -13,6 +13,8 @@ import { Link as RouterLink } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { PageSpinner } from "../components/ui/spinner";
 import { EmptyState } from "../components/ui/empty-state";
+import { EmptySearchIllustration, EmptyReviewsIllustration } from "../components/ui/illustrations";
+import { Badge } from "../components/ui/badge";
 
 interface FullListing {
   id: number;
@@ -227,7 +229,7 @@ export default function ListingDetailPage() {
   if (!listing) return (
     <div className="max-w-2xl mx-auto px-4 py-16">
       <EmptyState
-        icon={Building2}
+        illustration={EmptySearchIllustration}
         title="Anunțul nu a fost găsit"
         description="Anunțul căutat nu există sau a fost eliminat."
         action={<Link to="/" className="text-primary text-sm font-semibold hover:underline">← Înapoi acasă</Link>}
@@ -286,22 +288,22 @@ export default function ListingDetailPage() {
                       </RouterLink>
                     )}
                     {isPromotedNow && (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-amber-500 px-2.5 py-1 rounded-full">
+                      <Badge variant="brand">
                         <Zap className="h-3 w-3" />Promovat
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   <h1 className="text-2xl font-extrabold text-foreground leading-tight">{listing.title}</h1>
                   {isBusiness && listing.owner.businessName && (
                     <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                      <div className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${isCompany ? "bg-amber-50 text-amber-700" : "bg-blue-50 text-blue-700"}`}>
+                      <Badge variant={isCompany ? "warning" : "default"}>
                         {isCompany ? <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> : <Briefcase className="h-3 w-3" />}
                         {listing.owner.businessName}
-                      </div>
+                      </Badge>
                       {listing.owner.isVerified && (
-                        <div className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                        <Badge variant="success">
                           <BadgeCheck className="h-3 w-3" />Firmă verificată
-                        </div>
+                        </Badge>
                       )}
                     </div>
                   )}
@@ -431,7 +433,7 @@ export default function ListingDetailPage() {
                 {[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-secondary/50 rounded-xl animate-pulse" />)}
               </div>
             ) : reviews.length === 0 ? (
-              <EmptyState icon={Star} title="Nicio recenzie încă" description="Fii primul care lasă o recenzie." />
+              <EmptyState illustration={EmptyReviewsIllustration} title="Nicio recenzie încă" description="Fii primul care lasă o recenzie." />
             ) : (
               <div className="space-y-4">
                 {reviews.map(r => {

@@ -6,6 +6,8 @@ import {
   MapPin, Phone, Building2, Star, Calendar,
   Tag, ArrowLeft, User, Briefcase, CheckCircle
 } from "lucide-react";
+import { PageSpinner } from "../components/ui/spinner";
+import { EmptyState } from "../components/ui/empty-state";
 
 interface PublicUser {
   id: number;
@@ -52,17 +54,16 @@ export default function ProfilePage() {
   const isPaid = profile?.paidUntil && new Date(profile.paidUntil) > new Date();
   const isMe = me?.id === profile?.id;
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  );
+  if (isLoading) return <PageSpinner />;
 
   if (isError || !profile) return (
-    <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-      <User className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-40" />
-      <h2 className="font-bold text-lg">Profil negăsit</h2>
-      <Link to="/" className="text-primary text-sm hover:underline mt-2 inline-block">← Înapoi acasă</Link>
+    <div className="max-w-2xl mx-auto px-4 py-16">
+      <EmptyState
+        icon={User}
+        title="Profil negăsit"
+        description="Profilul căutat nu există sau a fost șters."
+        action={<Link to="/" className="text-primary text-sm font-semibold hover:underline">← Înapoi acasă</Link>}
+      />
     </div>
   );
 
@@ -157,10 +158,7 @@ export default function ProfilePage() {
                 Anunțuri active <span className="text-muted-foreground font-normal text-base">({activeListings.length})</span>
               </h2>
               {activeListings.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-border p-10 text-center shadow-card">
-                  <Building2 className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-                  <p className="font-semibold">Niciun anunț activ</p>
-                </div>
+                <EmptyState icon={Building2} title="Niciun anunț activ" />
               ) : (
                 <div className="space-y-3">
                   {activeListings.map(listing => (
@@ -187,13 +185,11 @@ export default function ProfilePage() {
               )}
             </>
           ) : (
-            <div className="bg-white rounded-2xl border border-border p-10 text-center shadow-card">
-              <User className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <h3 className="font-bold mb-1">Cont utilizator</h3>
-              <p className="text-sm text-muted-foreground">
-                Acest utilizator nu are o firmă activă pe platformă.
-              </p>
-            </div>
+            <EmptyState
+              icon={User}
+              title="Cont utilizator"
+              description="Acest utilizator nu are o firmă activă pe platformă."
+            />
           )}
         </div>
       </div>

@@ -3,6 +3,7 @@ import { apiFetch } from "../lib/api";
 import { toast } from "sonner";
 import { Bell, Star, CheckCircle, XCircle, Check, CheckCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { EmptyState } from "../components/ui/empty-state";
 
 interface Notification {
   id: number;
@@ -100,15 +101,11 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : notifs.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-border">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Bell className="h-8 w-8 text-primary/40" />
-          </div>
-          <h3 className="font-bold text-lg mb-2">Nicio notificare</h3>
-          <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-            Vei primi notificări când cineva îți lasă o recenzie sau când statusul firmei se schimbă.
-          </p>
-        </div>
+        <EmptyState
+          icon={Bell}
+          title="Nicio notificare"
+          description="Vei primi notificări când cineva îți lasă o recenzie sau când statusul firmei se schimbă."
+        />
       ) : (
         <div className="space-y-2">
           {notifs.map((n) => (

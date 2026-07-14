@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { cityToSlug } from "./CategoryPage";
 import ListingsMap from "../components/ListingsMap";
 import { Helmet } from "react-helmet-async";
+import { EmptyState } from "../components/ui/empty-state";
 
 const CITIES = [
   "", "București", "Cluj-Napoca", "Timișoara", "Iași", "Constanța",
@@ -385,16 +386,16 @@ export default function HomePage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-border shadow-card">
-            <div className="bg-secondary rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
-              <Building2 className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="font-bold text-lg mb-2">Niciun anunț găsit</h3>
-            <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">Încearcă alte filtre sau fii primul care postează un serviciu în această zonă.</p>
-            <Link to="/register" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
-              Postează primul anunț <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <EmptyState
+            icon={Building2}
+            title="Niciun anunț găsit"
+            description="Încearcă alte filtre sau fii primul care postează un serviciu în această zonă."
+            action={
+              <Link to="/register" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm">
+                Postează primul anunț <ArrowRight className="h-4 w-4" />
+              </Link>
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map(listing => (

@@ -9,6 +9,7 @@ import {
   AlertCircle, Plus, Minus, BadgeCheck, Flag, Zap,
   ZapOff, ExternalLink,
 } from "lucide-react";
+import { EmptyState } from "../components/ui/empty-state";
 
 interface User {
   id: number; name: string; email: string; phone: string | null;
@@ -221,10 +222,7 @@ export default function AdminPage() {
           {loadingUsers ? (
             <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border h-20 animate-pulse" />)}</div>
           ) : filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-border p-12 text-center shadow-card">
-              <Users className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="font-semibold">Niciun utilizator găsit</p>
-            </div>
+            <EmptyState icon={Users} title="Niciun utilizator găsit" />
           ) : (
             <div className="space-y-3">
               {filtered.map(user => {
@@ -379,10 +377,7 @@ export default function AdminPage() {
           {loadingReports ? (
             <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border h-24 animate-pulse" />)}</div>
           ) : visibleReports.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-border p-12 text-center shadow-card">
-              <Flag className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="font-semibold">Niciun raport {reportFilter === "pending" ? "în așteptare" : ""}</p>
-            </div>
+            <EmptyState icon={Flag} title={`Niciun raport ${reportFilter === "pending" ? "în așteptare" : ""}`} />
           ) : (
             <div className="space-y-3">
               {visibleReports.map(r => {
@@ -438,10 +433,7 @@ export default function AdminPage() {
           {loadingListings ? (
             <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="bg-white rounded-2xl border border-border h-20 animate-pulse" />)}</div>
           ) : adminListings.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-border p-12 text-center shadow-card">
-              <Building2 className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="font-semibold">Niciun anunț disponibil</p>
-            </div>
+            <EmptyState icon={Building2} title="Niciun anunț disponibil" />
           ) : (
             <div className="space-y-3">
               {adminListings.map(l => {

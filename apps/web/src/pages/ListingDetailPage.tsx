@@ -10,6 +10,8 @@ import {
   Flag, X, Zap,
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
+import { PageSpinner } from "../components/ui/spinner";
+import { EmptyState } from "../components/ui/empty-state";
 
 interface FullListing {
   id: number;
@@ -219,16 +221,16 @@ export default function ListingDetailPage() {
     setEditComment(r.comment || "");
   }
 
-  if (loadingListing) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  );
+  if (loadingListing) return <PageSpinner />;
 
   if (!listing) return (
-    <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-      <h2 className="font-bold text-lg">Anunțul nu a fost găsit</h2>
-      <Link to="/" className="text-primary text-sm hover:underline mt-2 inline-block">← Înapoi acasă</Link>
+    <div className="max-w-2xl mx-auto px-4 py-16">
+      <EmptyState
+        icon={Building2}
+        title="Anunțul nu a fost găsit"
+        description="Anunțul căutat nu există sau a fost eliminat."
+        action={<Link to="/" className="text-primary text-sm font-semibold hover:underline">← Înapoi acasă</Link>}
+      />
     </div>
   );
 
@@ -412,10 +414,7 @@ export default function ListingDetailPage() {
                 {[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-secondary/50 rounded-xl animate-pulse" />)}
               </div>
             ) : reviews.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Star className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                <p className="text-sm">Nicio recenzie încă. Fii primul!</p>
-              </div>
+              <EmptyState icon={Star} title="Nicio recenzie încă" description="Fii primul care lasă o recenzie." />
             ) : (
               <div className="space-y-4">
                 {reviews.map(r => {

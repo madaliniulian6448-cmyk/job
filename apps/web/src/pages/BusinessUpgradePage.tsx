@@ -168,7 +168,7 @@ export default function BusinessUpgradePage() {
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 group"
       >
         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-        {step === 1 ? "Înapoi la Dashboard" : "Pasul anterior"}
+        {step === 1 ? "Înapoi la Panoul meu" : "Pasul anterior"}
       </button>
 
       {/* Header */}
@@ -564,7 +564,7 @@ export default function BusinessUpgradePage() {
               </div>
             </div>
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-800 leading-relaxed">
-              Anunțul devine <strong>vizibil public imediat</strong> după plată și rămâne activ <strong>1 lună</strong>. Poți reînnoi oricând din Dashboard.
+              Anunțul devine <strong>vizibil public imediat</strong> după plată și rămâne activ <strong>1 lună</strong>. Poți reînnoi oricând din Panoul meu.
             </div>
           </div>
 
@@ -600,7 +600,7 @@ export default function BusinessUpgradePage() {
           </button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Anunțul se activează imediat. Poți edita detaliile oricând din Dashboard.
+            Anunțul se activează imediat. Poți edita detaliile oricând din Panoul meu.
           </p>
         </div>
       )}

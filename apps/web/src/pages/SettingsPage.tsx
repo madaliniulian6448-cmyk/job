@@ -105,7 +105,7 @@ export default function SettingsPage() {
             </p>
           </div>
           <Link to="/dashboard" className="ml-auto text-xs text-primary hover:underline">
-            Dashboard →
+            Panoul meu →
           </Link>
         </div>
       )}

@@ -72,7 +72,7 @@ export default function Navbar() {
               <Home className="h-4 w-4" />Acasă
             </Link>
             <Link to={user ? "/dashboard" : "/login"} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/dashboard") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
-              <LayoutDashboard className="h-4 w-4" />Dashboard
+              <LayoutDashboard className="h-4 w-4" />Panoul meu
             </Link>
             <Link to="/despre" className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive("/despre") ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
               <Info className="h-4 w-4" />Despre
@@ -167,7 +167,7 @@ export default function Navbar() {
             <Home className="h-4 w-4 text-primary" />Acasă
           </Link>
           <Link to={user ? "/dashboard" : "/login"} className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
-            <LayoutDashboard className="h-4 w-4 text-primary" />Dashboard
+            <LayoutDashboard className="h-4 w-4 text-primary" />Panoul meu
           </Link>
           <Link to="/despre" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary" onClick={() => setMobileOpen(false)}>
             <Info className="h-4 w-4 text-muted-foreground" />Despre noi

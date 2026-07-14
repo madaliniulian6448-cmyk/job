@@ -646,7 +646,7 @@ export default function DashboardPage() {
                   <div className="relative flex-shrink-0 w-44 sm:w-56">
                     <img
                       src={listing.images[0]}
-                      alt=""
+                      alt={listing.title}
                       className="w-full h-full object-cover min-h-[160px]"
                     />
                     {listing.images.length > 1 && (

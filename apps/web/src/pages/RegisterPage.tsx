@@ -84,7 +84,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">Nume complet *</label>
-              <input type="text" required value={form.name} onChange={set("name")}
+              <input type="text" required autoComplete="name" value={form.name} onChange={set("name")}
                 className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors bg-white"
                 placeholder="Ion Popescu" />
             </div>
@@ -97,7 +97,7 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">Parolă *</label>
               <div className="relative">
-                <input type={show ? "text" : "password"} required minLength={6} value={form.password} onChange={set("password")}
+                <input type={show ? "text" : "password"} required minLength={6} autoComplete="new-password" value={form.password} onChange={set("password")}
                   className="w-full border-2 border-border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:border-primary transition-colors bg-white"
                   placeholder="Minim 6 caractere" />
                 <button type="button" onClick={() => setShow(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -108,7 +108,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-foreground mb-2">Telefon</label>
-                <input type="tel" value={form.phone} onChange={set("phone")}
+                <input type="tel" autoComplete="tel" value={form.phone} onChange={set("phone")}
                   className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors bg-white"
                   placeholder="07xx xxx xxx" />
               </div>
@@ -136,7 +136,7 @@ export default function RegisterPage() {
           </form>
 
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Prin înregistrare, accepți <span className="text-primary cursor-pointer hover:underline">Termenii și condițiile</span>.
+            Prin înregistrare, accepți <Link to="/termeni" className="text-primary hover:underline">Termenii și condițiile</Link>.
           </p>
 
           <div className="mt-6 pt-6 border-t border-border text-center">

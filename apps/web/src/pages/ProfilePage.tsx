@@ -8,6 +8,7 @@ import {
   Tag, ArrowLeft, User, Briefcase, BadgeCheck,
   Share2, Check, MessageSquare, Image as ImageIcon,
 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { PageSpinner } from "../components/ui/spinner";
 import { EmptyState } from "../components/ui/empty-state";
 
@@ -119,8 +120,23 @@ export default function ProfilePage() {
     }
   };
 
+  const metaTitle = isVisibleBusiness && profile.businessName
+    ? `${profile.businessName} — ${profile.city ?? "ServiciiLocale"} | ServiciiLocale`
+    : `${profile.name} | ServiciiLocale`;
+  const metaDescription = isVisibleBusiness
+    ? (profile.businessDescription || `Servicii oferite de ${profile.businessName ?? profile.name} în ${profile.city ?? "România"}.`).slice(0, 160)
+    : `Profilul lui ${profile.name} pe ServiciiLocale.`;
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:type" content="profile" />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
+      </Helmet>
+
       <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 group">
         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
         Înapoi
@@ -264,7 +280,7 @@ export default function ProfilePage() {
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
                   {stats.gallery.map((src, i) => (
-                    <img key={i} src={src} alt="" className="aspect-square w-full rounded-lg object-cover border border-border" />
+                    <img key={i} src={src} alt={`Fotografie din anunțurile lui ${profile.name}`} className="aspect-square w-full rounded-lg object-cover border border-border" />
                   ))}
                 </div>
               </div>

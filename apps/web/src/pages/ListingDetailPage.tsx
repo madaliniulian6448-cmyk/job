@@ -10,6 +10,7 @@ import {
   Flag, X, Zap,
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { PageSpinner } from "../components/ui/spinner";
 import { EmptyState } from "../components/ui/empty-state";
 
@@ -241,8 +242,24 @@ export default function ListingDetailPage() {
   const isPromotedNow = listing.isPromoted && listing.promotedUntil && new Date(listing.promotedUntil) > now;
   const createdDate = new Date(listing.createdAt).toLocaleDateString("ro-RO", { day: "2-digit", month: "long", year: "numeric" });
 
+  const metaTitle = `${listing.title} — ${listing.city} | ServiciiLocale`;
+  const metaDescription = (listing.description || `${listing.title} în ${listing.city}. Contact direct, fără intermediari.`).slice(0, 160);
+  const metaImage = listing.images?.[0];
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <Helmet>
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
+        {metaImage && <meta property="og:image" content={metaImage} />}
+        <meta name="twitter:card" content={metaImage ? "summary_large_image" : "summary"} />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+      </Helmet>
+
       {/* Back */}
       <button onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 group">
@@ -304,7 +321,7 @@ export default function ListingDetailPage() {
               {listing.images?.length > 1 && (
                 <div className={`grid gap-2 mb-4 ${listing.images.length === 2 ? "grid-cols-2" : listing.images.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
                   {listing.images.slice(1).map((url, i) => (
-                    <img key={i} src={url} alt="" className="w-full h-28 object-cover rounded-xl" />
+                    <img key={i} src={url} alt={`${listing.title} - poza ${i + 2}`} className="w-full h-28 object-cover rounded-xl" />
                   ))}
                 </div>
               )}

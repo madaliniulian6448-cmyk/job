@@ -81,7 +81,7 @@ export default function LoginPage() {
               <label className="block text-sm font-semibold text-foreground mb-2">Parolă</label>
               <div className="relative">
                 <input
-                  type={show ? "text" : "password"} required
+                  type={show ? "text" : "password"} required autoComplete="current-password"
                   value={form.password}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                   className="w-full border-2 border-border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:border-primary transition-colors bg-white"

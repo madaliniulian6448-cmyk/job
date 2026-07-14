@@ -2,7 +2,10 @@ import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import path from "path";
+import { sql } from "drizzle-orm";
 import { eq, and } from "drizzle-orm";
 import { db } from "./db";
 import { listings, users, categories } from "shared/src/schema";
@@ -21,6 +24,11 @@ import uploadRoutes from "./routes/upload";
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
+// Replit's dev/prod proxy sits in front of this server and sets X-Forwarded-For,
+// so trust exactly one hop to get real client IPs (needed for rate limiting)
+// without opening up IP spoofing via arbitrary forwarded headers.
+app.set("trust proxy", 1);
+
 // Allow the Vite dev server, the Replit preview domain, and any configured frontend origin.
 // In production set ALLOWED_ORIGINS to the deployed frontend URL.
 const ALLOWED_ORIGINS = new Set(
@@ -32,6 +40,31 @@ const ALLOWED_ORIGINS = new Set(
     .filter(Boolean)
     .map((o) => (o as string).trim())
 );
+
+// Security headers. CSP/COEP are disabled: the API serves no HTML/scripts
+// itself and strict defaults would break the static-served /api/uploads
+// images (which can be embedded by the frontend on a different origin).
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// Baseline abuse protection. Auth endpoints get a tighter limit since they're
+// the most attractive brute-force target; everything else gets a generous
+// general limit so normal browsing/filtering never hits it.
+const generalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 600, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Prea multe încercări. Încearcă din nou mai târziu." },
+});
+app.use("/api", generalLimiter);
+app.use("/api/auth", authLimiter);
 
 app.use(
   cors({
@@ -62,7 +95,15 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/favorites", favoritesRoutes);
 app.use("/api/notifications", notificationsRoutes);
 
-app.get("/api/health", (_req, res) => res.json({ ok: true }));
+app.get("/api/health", async (_req, res) => {
+  const startedAt = Date.now();
+  try {
+    await db.execute(sql`select 1`);
+    res.json({ ok: true, db: "up", dbLatencyMs: Date.now() - startedAt });
+  } catch (err) {
+    res.status(503).json({ ok: false, db: "down", error: "Database unreachable" });
+  }
+});
 
 // ── SEO: sitemap.xml & robots.txt ───────────────────────────────────────────
 // Served at the root so they resolve correctly if this server is the origin
